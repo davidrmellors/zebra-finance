@@ -87,9 +87,6 @@ export const TransactionDetailScreen: React.FC<TransactionDetailScreenProps> = (
     <LinearGradient colors={theme.gradients.primary} style={styles.gradient}>
       <View style={styles.container}>
         <LinearGradient colors={theme.gradients.secondary} style={styles.header}>
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
           <Text style={styles.title}>Transaction Detail</Text>
         </LinearGradient>
 
@@ -147,6 +144,19 @@ export const TransactionDetailScreen: React.FC<TransactionDetailScreenProps> = (
             </LinearGradient>
           </LinearGradient>
         </ScrollView>
+
+        <View style={styles.doneButtonCard}>
+          <LinearGradient
+            colors={[theme.accent.primary, theme.accent.secondary]}
+            style={styles.doneButton}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <TouchableOpacity style={styles.buttonInner} onPress={onBack}>
+              <Text style={styles.doneButtonText}>Done</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
 
         <Modal
           visible={showCategoryModal}
@@ -211,17 +221,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 20,
-    flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: theme.border.primary,
-  },
-  backButton: {
-    marginRight: 16,
-  },
-  backButtonText: {
-    color: theme.text.primary,
-    fontSize: 16,
   },
   title: {
     fontSize: 28,
@@ -373,5 +375,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: theme.accent.primary,
     fontWeight: 'bold',
+  },
+  doneButtonCard: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    alignItems: 'center',
+  },
+  doneButton: {
+    borderRadius: 8,
+    overflow: 'hidden',
+    width: '90%',
+  },
+  doneButtonText: {
+    color: theme.text.primary,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

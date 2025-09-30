@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,15 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { database } from '../services/database';
 import { Category, CategoryTotal } from '../types/database';
 import { theme } from '../theme/colors';
+import { STORAGE_KEYS } from '../constants/storage';
 
 const PRESET_COLORS = [
   '#4CAF50', '#FF9800', '#2196F3', '#E91E63', '#9C27B0',
@@ -26,7 +30,43 @@ const PRESET_ICONS = [
   '🏠', '✈️', '📱', '💻', '🎮', '📚', '☕', '🎵', '🏃',
 ];
 
-export const CategoriesScreen: React.FC = () => {
+// Helper function to calculate last salary date
+const getLastSalaryDate = (payDay: number): Date => {
+  const today = new Date();
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+
+  // Calculate salary date for current month
+  let salaryDate = new Date(currentYear, currentMonth, payDay);
+
+  // If the pay day is a Saturday (6) or Sunday (0), get the Friday before
+  if (salaryDate.getDay() === 6) {
+    salaryDate.setDate(payDay - 1); // Friday before Saturday
+  } else if (salaryDate.getDay() === 0) {
+    salaryDate.setDate(payDay - 2); // Friday before Sunday
+  }
+
+  // If we haven't reached this month's salary date yet, use last month's
+  if (today < salaryDate) {
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    salaryDate = new Date(lastMonthYear, lastMonth, payDay);
+
+    if (salaryDate.getDay() === 6) {
+      salaryDate.setDate(payDay - 1);
+    } else if (salaryDate.getDay() === 0) {
+      salaryDate.setDate(payDay - 2);
+    }
+  }
+
+  return salaryDate;
+};
+
+interface CategoriesScreenProps {
+  onNavigateToFilteredTransactions?: (categoryId: number, categoryName: string) => void;
+}
+
+export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ onNavigateToFilteredTransactions }) => {
   const [categoryTotals, setCategoryTotals] = useState<CategoryTotal[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -35,14 +75,37 @@ export const CategoriesScreen: React.FC = () => {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[0]);
   const [selectedIcon, setSelectedIcon] = useState(PRESET_ICONS[0]);
+  const [filterByPayPeriod, setFilterByPayPeriod] = useState(true);
+  const [payDay, setPayDay] = useState(27);
 
+  // Load pay day from storage
   useEffect(() => {
-    loadCategoryTotals();
+    const loadPayDay = async () => {
+      try {
+        const savedPayDay = await AsyncStorage.getItem(STORAGE_KEYS.PAY_DAY);
+        if (savedPayDay) {
+          setPayDay(parseInt(savedPayDay));
+        }
+      } catch (error) {
+        console.error('Error loading pay day:', error);
+      }
+    };
+    loadPayDay();
   }, []);
 
   const loadCategoryTotals = async () => {
     try {
-      const totals = await database.getCategoryTotals();
+      let startDate: string | undefined;
+      let endDate: string | undefined;
+
+      if (filterByPayPeriod) {
+        const lastSalary = getLastSalaryDate(payDay);
+        const today = new Date();
+        startDate = lastSalary.toISOString().split('T')[0];
+        endDate = today.toISOString().split('T')[0];
+      }
+
+      const totals = await database.getCategoryTotals(startDate, endDate);
       setCategoryTotals(totals);
     } catch (error) {
       console.error('Error loading category totals:', error);
@@ -50,6 +113,13 @@ export const CategoriesScreen: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Reload category totals when screen comes into focus or filter changes
+  useFocusEffect(
+    useCallback(() => {
+      loadCategoryTotals();
+    }, [filterByPayPeriod, payDay])
+  );
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) {
@@ -143,43 +213,57 @@ export const CategoriesScreen: React.FC = () => {
     })}`;
   };
 
+  const handleCategoryPress = (categoryId: number, categoryName: string) => {
+    if (onNavigateToFilteredTransactions) {
+      onNavigateToFilteredTransactions(categoryId, categoryName);
+    }
+  };
+
   const renderCategoryItem = ({ item }: { item: CategoryTotal }) => {
     const isNegative = item.total < 0;
 
     return (
-      <LinearGradient colors={theme.gradients.card} style={styles.categoryItem}>
-        <View style={styles.categoryHeader}>
-          <View style={styles.categoryInfo}>
-            <View style={[styles.categoryColorBadge, { backgroundColor: item.categoryColor }]} />
-            <View style={styles.categoryText}>
-              <Text style={styles.categoryName}>{item.categoryName}</Text>
-              <Text style={styles.categoryCount}>{item.count} transactions</Text>
+      <TouchableOpacity onPress={() => handleCategoryPress(item.categoryId, item.categoryName)}>
+        <LinearGradient colors={theme.gradients.card} style={styles.categoryItem}>
+          <View style={styles.categoryHeader}>
+            <View style={styles.categoryInfo}>
+              <View style={[styles.categoryColorBadge, { backgroundColor: item.categoryColor }]} />
+              <View style={styles.categoryText}>
+                <Text style={styles.categoryName}>{item.categoryName}</Text>
+                <Text style={styles.categoryCount}>{item.count} transactions</Text>
+              </View>
+            </View>
+            <View style={styles.categoryActions}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  openEditModal(item);
+                }}
+              >
+                <Text style={styles.actionButtonText}>✏️</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.deleteButton]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleDeleteCategory(item.categoryId, item.categoryName);
+                }}
+              >
+                <Text style={styles.actionButtonText}>🗑️</Text>
+              </TouchableOpacity>
             </View>
           </View>
-          <View style={styles.categoryActions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => openEditModal(item)}
-            >
-              <Text style={styles.actionButtonText}>✏️</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.deleteButton]}
-              onPress={() => handleDeleteCategory(item.categoryId, item.categoryName)}
-            >
-              <Text style={styles.actionButtonText}>🗑️</Text>
-            </TouchableOpacity>
+          <View style={styles.categoryAmount}>
+            <Text style={[
+              styles.amountText,
+              isNegative ? styles.negativeAmount : styles.positiveAmount
+            ]}>
+              {isNegative ? '-' : '+'}{formatAmount(item.total)}
+            </Text>
           </View>
-        </View>
-        <View style={styles.categoryAmount}>
-          <Text style={[
-            styles.amountText,
-            isNegative ? styles.negativeAmount : styles.positiveAmount
-          ]}>
-            {isNegative ? '-' : '+'}{formatAmount(item.total)}
-          </Text>
-        </View>
-      </LinearGradient>
+        </LinearGradient>
+      </TouchableOpacity>
     );
   };
 
@@ -299,12 +383,35 @@ export const CategoriesScreen: React.FC = () => {
   const totalSpending = categoryTotals.reduce((sum, cat) => sum + (cat.total < 0 ? Math.abs(cat.total) : 0), 0);
   const totalIncome = categoryTotals.reduce((sum, cat) => sum + (cat.total > 0 ? cat.total : 0), 0);
 
+  const formatDateRange = () => {
+    if (!filterByPayPeriod) return 'All time';
+    const lastSalary = getLastSalaryDate(payDay);
+    const today = new Date();
+    return `${lastSalary.getDate()} ${lastSalary.toLocaleString('en-ZA', { month: 'short' })} - ${today.getDate()} ${today.toLocaleString('en-ZA', { month: 'short' })}`;
+  };
+
   return (
     <LinearGradient colors={theme.gradients.primary} style={styles.gradient}>
       <View style={styles.container}>
         <LinearGradient colors={theme.gradients.secondary} style={styles.header}>
           <Text style={styles.title}>📊 Categories</Text>
           <Text style={styles.subtitle}>Track your spending by category</Text>
+        </LinearGradient>
+
+        {/* Date Filter Toggle */}
+        <LinearGradient colors={theme.gradients.card} style={styles.filterCard}>
+          <View style={styles.filterContent}>
+            <View style={styles.filterText}>
+              <Text style={styles.filterLabel}>Current Pay Period</Text>
+              <Text style={styles.filterSubtext}>{formatDateRange()}</Text>
+            </View>
+            <Switch
+              value={filterByPayPeriod}
+              onValueChange={setFilterByPayPeriod}
+              trackColor={{ false: theme.background.secondary, true: theme.accent.secondary }}
+              thumbColor={filterByPayPeriod ? theme.accent.primary : theme.text.tertiary}
+            />
+          </View>
         </LinearGradient>
 
         {/* Summary Cards */}
@@ -392,6 +499,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.text.secondary,
     letterSpacing: 0.5,
+  },
+  filterCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.border.primary,
+  },
+  filterContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  filterText: {
+    flex: 1,
+  },
+  filterLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.text.primary,
+    marginBottom: 4,
+  },
+  filterSubtext: {
+    fontSize: 12,
+    color: theme.text.tertiary,
   },
   summaryContainer: {
     flexDirection: 'row',

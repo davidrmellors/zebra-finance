@@ -58,8 +58,8 @@ class NudgeService {
 
       const dailyAverage = totalSpending / 30;
 
-      // Uncategorized transactions nudge
-      const uncategorized = recentTransactions.filter((t) => !t.categoryId);
+      // Uncategorized transactions nudge - count ALL transactions, not just recent ones
+      const uncategorized = allTransactions.filter((t) => !t.categoryId);
       if (uncategorized.length > 5) {
         nudges.push({
           id: 'uncategorized',

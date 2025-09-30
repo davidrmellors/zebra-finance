@@ -10,11 +10,14 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { openaiService } from '../services/openaiService';
 import { investecAuth } from '../services/investecAuth';
 import { theme } from '../theme/colors';
+import { STORAGE_KEYS } from '../constants/storage';
 
-const OPENAI_KEY = 'openai_api_key';
+const OPENAI_KEY = STORAGE_KEYS.OPENAI_API_KEY;
+const PAY_DAY_KEY = STORAGE_KEYS.PAY_DAY;
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -24,9 +27,11 @@ interface SettingsScreenProps {
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onLogout }) => {
   const [apiKey, setApiKey] = useState('');
   const [hasApiKey, setHasApiKey] = useState(false);
+  const [payDay, setPayDay] = useState('27');
 
   useEffect(() => {
     loadApiKey();
+    loadPayDay();
   }, []);
 
   const loadApiKey = async () => {
@@ -38,6 +43,32 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onLogout
       }
     } catch (error) {
       console.error('Error loading API key:', error);
+    }
+  };
+
+  const loadPayDay = async () => {
+    try {
+      const savedPayDay = await AsyncStorage.getItem(PAY_DAY_KEY);
+      if (savedPayDay) {
+        setPayDay(savedPayDay);
+      }
+    } catch (error) {
+      console.error('Error loading pay day:', error);
+    }
+  };
+
+  const handleSavePayDay = async () => {
+    const dayNumber = parseInt(payDay);
+    if (isNaN(dayNumber) || dayNumber < 1 || dayNumber > 31) {
+      Alert.alert('Error', 'Please enter a valid day between 1 and 31');
+      return;
+    }
+
+    try {
+      await AsyncStorage.setItem(PAY_DAY_KEY, payDay.trim());
+      Alert.alert('Success', 'Pay day saved successfully!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save pay day');
     }
   };
 
@@ -92,6 +123,33 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onLogout
         </LinearGradient>
 
         <ScrollView style={styles.content}>
+          <LinearGradient colors={theme.gradients.card} style={styles.section}>
+            <Text style={styles.sectionTitle}>Pay Period Settings</Text>
+            <Text style={styles.sectionDescription}>
+              Set the day of the month you get paid (e.g., 27). This is used to filter category totals by your current pay period.
+            </Text>
+            <TextInput
+              style={styles.input}
+              value={payDay}
+              onChangeText={setPayDay}
+              placeholder="27"
+              placeholderTextColor={theme.text.tertiary}
+              keyboardType="number-pad"
+              maxLength={2}
+            />
+            <LinearGradient
+              colors={[theme.accent.primary, theme.accent.secondary]}
+              style={styles.saveButton}
+            >
+              <TouchableOpacity
+                style={styles.buttonInner}
+                onPress={handleSavePayDay}
+              >
+                <Text style={styles.saveButtonText}>Save Pay Day</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </LinearGradient>
+
           <LinearGradient colors={theme.gradients.card} style={styles.section}>
             <Text style={styles.sectionTitle}>OpenAI Configuration</Text>
             <Text style={styles.sectionDescription}>

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useNavigationState } from '@react-navigation/native';
 import { HomeScreen } from '../screens/HomeScreen';
 import { TransactionsScreen } from '../screens/TransactionsScreen';
 import { ChatScreen } from '../screens/ChatScreen';
@@ -15,6 +16,10 @@ interface MainTabsProps {
   onNavigateToTransactionDetail: (id: number) => void;
   onNavigateToSettings: () => void;
   onNavigateToCategoryManagement: () => void;
+  refreshKey: number;
+  categoryFilter?: { categoryId: number; categoryName: string } | null;
+  onNavigateToFilteredTransactions?: (categoryId: number, categoryName: string) => void;
+  onClearCategoryFilter?: () => void;
 }
 
 export const MainTabs: React.FC<MainTabsProps> = ({
@@ -22,7 +27,20 @@ export const MainTabs: React.FC<MainTabsProps> = ({
   onNavigateToTransactionDetail,
   onNavigateToSettings,
   onNavigateToCategoryManagement,
+  refreshKey,
+  categoryFilter,
+  onNavigateToFilteredTransactions,
+  onClearCategoryFilter,
 }) => {
+  // Clear category filter after it's been applied
+  useEffect(() => {
+    if (categoryFilter && onClearCategoryFilter) {
+      const timer = setTimeout(() => {
+        onClearCategoryFilter();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [categoryFilter, onClearCategoryFilter]);
   return (
     <Tab.Navigator
       screenOptions={{
@@ -65,8 +83,10 @@ export const MainTabs: React.FC<MainTabsProps> = ({
       >
         {() => (
           <TransactionsScreen
+            key={refreshKey}
             onTransactionPress={onNavigateToTransactionDetail}
             onBack={() => {}}
+            initialCategoryFilter={categoryFilter || undefined}
           />
         )}
       </Tab.Screen>
@@ -92,8 +112,13 @@ export const MainTabs: React.FC<MainTabsProps> = ({
           tabBarLabel: 'Categories',
           tabBarIcon: ({ color }) => <TabIcon icon="📊" color={color} />,
         }}
-        component={CategoriesScreen}
-      />
+      >
+        {() => (
+          <CategoriesScreen
+            onNavigateToFilteredTransactions={onNavigateToFilteredTransactions}
+          />
+        )}
+      </Tab.Screen>
 
       <Tab.Screen
         name="Settings"

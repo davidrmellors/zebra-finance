@@ -65,7 +65,7 @@ export class InvestecApiService {
   }
 
   /**
-   * Get transactions for an account
+   * Get transactions for an account with automatic pagination
    */
   async getTransactions(
     accountId: string,
@@ -74,22 +74,44 @@ export class InvestecApiService {
   ): Promise<InvestecTransaction[]> {
     try {
       const headers = await this.getHeaders();
-      let url = `${BASE_URL}/accounts/${accountId}/transactions`;
+      const allTransactions: InvestecTransaction[] = [];
+      let currentPage = 1;
+      let totalPages = 1;
 
-      const params: string[] = [];
-      if (fromDate) params.push(`fromDate=${fromDate}`);
-      if (toDate) params.push(`toDate=${toDate}`);
+      // Fetch all pages
+      do {
+        let url = `${BASE_URL}/accounts/${accountId}/transactions`;
 
-      if (params.length > 0) {
+        const params: string[] = [];
+        if (fromDate) params.push(`fromDate=${fromDate}`);
+        if (toDate) params.push(`toDate=${toDate}`);
+        params.push(`page=${currentPage}`);
+
         url += `?${params.join('&')}`;
-      }
 
-      const response = await axios.get<{ data: { transactions: InvestecTransaction[] } }>(
-        url,
-        { headers }
-      );
+        console.log(`Fetching transactions page ${currentPage} for account ${accountId}`);
 
-      return response.data.data.transactions;
+        const response = await axios.get<{
+          data: { transactions: InvestecTransaction[] };
+          meta?: { totalPages?: number };
+        }>(url, { headers });
+
+        const transactions = response.data.data.transactions || [];
+        allTransactions.push(...transactions);
+
+        // Check if there are more pages
+        if (response.data.meta?.totalPages) {
+          totalPages = response.data.meta.totalPages;
+        }
+
+        console.log(`Fetched ${transactions.length} transactions from page ${currentPage}/${totalPages}`);
+
+        currentPage++;
+      } while (currentPage <= totalPages);
+
+      console.log(`Total transactions fetched for account ${accountId}: ${allTransactions.length}`);
+
+      return allTransactions;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(`Failed to fetch transactions: ${error.response?.data?.message || error.message}`);

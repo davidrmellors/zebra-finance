@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import Markdown from 'react-native-markdown-display';
 import { openaiService, ChatMessage } from '../services/openaiService';
 import { theme } from '../theme/colors';
 
@@ -47,6 +48,29 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onBack, onOpenSettings }
       );
     }
   }, [navigation]);
+
+  const handleClearChat = () => {
+    Alert.alert(
+      'Clear Chat',
+      'Are you sure you want to clear the chat history?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: () => {
+            setMessages([
+              {
+                role: 'assistant',
+                content: 'Hi! I\'m Zebra Finance Assistant. I can help you understand your spending habits and provide financial insights. How can I help you today?',
+                timestamp: new Date(),
+              },
+            ]);
+          },
+        },
+      ]
+    );
+  };
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
@@ -101,7 +125,22 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onBack, onOpenSettings }
         colors={isUser ? [theme.accent.primary, theme.accent.secondary] : theme.gradients.card}
         style={[styles.messageBubble, isUser ? styles.userBubble : styles.assistantBubble]}
       >
-        <Text style={[styles.messageText, isUser && styles.userText]}>{item.content}</Text>
+        {isUser ? (
+          <Text style={[styles.messageText, styles.userText]}>{item.content}</Text>
+        ) : (
+          <Markdown
+            style={{
+              body: { color: theme.text.secondary, fontSize: 16, lineHeight: 22 },
+              strong: { color: theme.text.primary, fontWeight: '700' },
+              em: { fontStyle: 'italic' },
+              paragraph: { marginTop: 0, marginBottom: 8 },
+              list_item: { marginBottom: 4 },
+              bullet_list: { marginBottom: 8 },
+            }}
+          >
+            {item.content}
+          </Markdown>
+        )}
         {item.timestamp && (
           <Text style={[styles.timestamp, isUser && styles.userTimestamp]}>
             {item.timestamp.toLocaleTimeString('en-ZA', {
@@ -143,6 +182,9 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onBack, onOpenSettings }
         )}
 
         <View style={styles.inputContainer}>
+          <TouchableOpacity onPress={handleClearChat} style={styles.clearButton}>
+            <Text style={styles.clearButtonText}>🗑️</Text>
+          </TouchableOpacity>
           <TextInput
             style={styles.input}
             value={inputText}
@@ -192,6 +234,20 @@ const styles = StyleSheet.create({
     color: theme.text.primary,
     textAlign: 'center',
     letterSpacing: 0.5,
+  },
+  clearButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.background.secondary,
+    borderWidth: 1,
+    borderColor: theme.border.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  clearButtonText: {
+    fontSize: 20,
   },
   messagesList: {
     padding: 16,

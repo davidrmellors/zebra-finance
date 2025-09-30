@@ -18,6 +18,8 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [overlayScreen, setOverlayScreen] = useState<OverlayScreen>('none');
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [categoryFilter, setCategoryFilter] = useState<{ categoryId: number; categoryName: string } | null>(null);
   const navigationRef = useRef<any>(null);
 
   useEffect(() => {
@@ -55,6 +57,7 @@ export default function App() {
 
   const handleBackFromDetail = () => {
     setOverlayScreen('none');
+    setRefreshKey(prev => prev + 1);
   };
 
   const handleNavigateToSettings = () => {
@@ -71,6 +74,16 @@ export default function App() {
 
   const handleBackFromCategoryManagement = () => {
     setOverlayScreen('none');
+  };
+
+  const handleNavigateToFilteredTransactions = (categoryId: number, categoryName: string) => {
+    setCategoryFilter({ categoryId, categoryName });
+    // Navigate to Transactions tab
+    navigationRef.current?.navigate('Transactions');
+  };
+
+  const handleClearCategoryFilter = () => {
+    setCategoryFilter(null);
   };
 
   if (isLoading) {
@@ -98,6 +111,10 @@ export default function App() {
           onNavigateToTransactionDetail={handleTransactionPress}
           onNavigateToSettings={handleNavigateToSettings}
           onNavigateToCategoryManagement={handleNavigateToCategoryManagement}
+          refreshKey={refreshKey}
+          categoryFilter={categoryFilter}
+          onNavigateToFilteredTransactions={handleNavigateToFilteredTransactions}
+          onClearCategoryFilter={handleClearCategoryFilter}
         />
       </NavigationContainer>
 
