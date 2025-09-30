@@ -63,9 +63,10 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
     }
   };
 
-  const formatAmount = (amount: number) => {
+  const formatAmount = (amount: number, type: string) => {
     const formatted = Math.abs(amount).toFixed(2);
-    return amount < 0 ? `-R${formatted}` : `R${formatted}`;
+    // Use transaction type to determine if it's a debit (money out) or credit (money in)
+    return type.toLowerCase() === 'debit' ? `-R${formatted}` : `R${formatted}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -94,8 +95,8 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
           )}
         </View>
         <View style={styles.transactionRight}>
-          <Text style={[styles.transactionAmount, item.amount < 0 && styles.negativeAmount]}>
-            {formatAmount(item.amount)}
+          <Text style={[styles.transactionAmount, item.type.toLowerCase() === 'debit' && styles.negativeAmount]}>
+            {formatAmount(item.amount, item.type)}
           </Text>
         </View>
       </LinearGradient>
