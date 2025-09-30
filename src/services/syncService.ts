@@ -46,13 +46,6 @@ export class SyncService {
       // Fetch transactions from Investec
       const investecTransactions = await investecApi.getAllTransactions(fromDate, toDate);
 
-      console.log('=== Investec API Response ===');
-      console.log(`Received ${investecTransactions.length} transactions`);
-
-      if (investecTransactions.length > 0) {
-        console.log('First transaction sample:', JSON.stringify(investecTransactions[0], null, 2));
-      }
-
       // Validate and sanitize transactions
       const validTransactions: any[] = [];
       const invalidTransactions: any[] = [];
@@ -76,10 +69,6 @@ export class SyncService {
           // Handle null transactionType - some transactions legitimately don't have this field
           const transactionType = t.transactionType || 'Other';
 
-          if (!t.transactionType) {
-            console.log(`Transaction ${index} has null transactionType, using default: "${transactionType}"`);
-          }
-
           validTransactions.push({
             accountId: t.accountId,
             type: t.type,
@@ -98,9 +87,6 @@ export class SyncService {
           });
         }
       });
-
-      console.log(`Valid transactions: ${validTransactions.length}`);
-      console.log(`Invalid transactions: ${invalidTransactions.length}`);
 
       if (invalidTransactions.length > 0) {
         console.error('Invalid transactions detected:', invalidTransactions);

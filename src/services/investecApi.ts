@@ -89,8 +89,6 @@ export class InvestecApiService {
 
         url += `?${params.join('&')}`;
 
-        console.log(`Fetching transactions page ${currentPage} for account ${accountId}`);
-
         const response = await axios.get<{
           data: { transactions: InvestecTransaction[] };
           meta?: { totalPages?: number };
@@ -104,12 +102,8 @@ export class InvestecApiService {
           totalPages = response.data.meta.totalPages;
         }
 
-        console.log(`Fetched ${transactions.length} transactions from page ${currentPage}/${totalPages}`);
-
         currentPage++;
       } while (currentPage <= totalPages);
-
-      console.log(`Total transactions fetched for account ${accountId}: ${allTransactions.length}`);
 
       return allTransactions;
     } catch (error) {

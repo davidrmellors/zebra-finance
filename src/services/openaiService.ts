@@ -45,16 +45,9 @@ class OpenAIService {
     try {
       // Get ALL transactions (not limited to 50)
       const allTransactions = await database.getTransactions();
-      console.log(`[OpenAI] Fetched ${allTransactions.length} total transactions`);
-      console.log(`[OpenAI] Sample transactions:`, allTransactions.slice(0, 5).map(t => ({
-        desc: t.description,
-        amount: t.amount,
-        date: t.transactionDate
-      })));
 
       // Get category totals
       const categoryTotals = await database.getCategoryTotals();
-      console.log(`[OpenAI] Category totals:`, categoryTotals);
 
       // Calculate overall summary statistics
       // Note: Investec stores all amounts as positive. Use 'type' field to determine debit vs credit
@@ -114,14 +107,6 @@ class OpenAIService {
         .slice(0, 20)
         .map((t) => `${new Date(t.transactionDate).toLocaleDateString('en-ZA')}: ${t.description} - R${t.amount.toFixed(2)} (${t.categoryName || 'Uncategorized'})`)
         .join('\n');
-
-      console.log('[OpenAI] Financial context summary:', {
-        totalTransactions: allTransactions.length,
-        totalSpending: totalSpending.toFixed(2),
-        monthlySpending: monthlySpending.toFixed(2),
-        uncategorizedCount: uncategorizedTransactions.length,
-        uncategorizedAmount: uncategorizedSpending.toFixed(2)
-      });
 
       return `
 # User's Financial Summary

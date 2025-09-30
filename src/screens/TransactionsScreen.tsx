@@ -59,7 +59,6 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
   useEffect(() => {
     if (setCategoryFilterRef) {
       setCategoryFilterRef((categoryId: number) => {
-        console.log('Applying category filter:', categoryId);
         setFilters({
           transactionType: 'all',
           categoryId: categoryId,
@@ -94,21 +93,16 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
   };
 
   const applyFilters = (data: TransactionWithCategory[], currentFilters: TransactionFilters) => {
-    console.log('applyFilters called with', data.length, 'transactions and filters:', currentFilters);
     let filtered = [...data];
 
     // Category filter
     if (currentFilters.categoryId) {
-      console.log('Filtering by category:', currentFilters.categoryId);
       filtered = filtered.filter(t => t.categoryId === currentFilters.categoryId);
-      console.log('After category filter:', filtered.length, 'transactions');
     }
 
     // Transaction type filter
     if (currentFilters.transactionType && currentFilters.transactionType !== 'all') {
-      console.log('Filtering by type:', currentFilters.transactionType);
       filtered = filtered.filter(t => t.type.toLowerCase() === currentFilters.transactionType);
-      console.log('After type filter:', filtered.length, 'transactions');
     }
 
     // Date range filter
@@ -119,7 +113,6 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
       filtered = filtered.filter(t => t.transactionDate <= currentFilters.endDate!);
     }
 
-    console.log('Setting', filtered.length, 'filtered transactions');
     setTransactions(filtered);
   };
 
@@ -167,7 +160,6 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
   };
 
   const handleClearFilters = () => {
-    console.log('Clearing filters');
     const clearedFilters = { transactionType: 'all' as const };
     setFilters(clearedFilters);
     setTempFilters(clearedFilters);

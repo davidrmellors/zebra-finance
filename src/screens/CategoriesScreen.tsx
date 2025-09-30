@@ -221,7 +221,6 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ onNavigateTo
   };
 
   const handleCategoryPress = (categoryId: number) => {
-    console.log('Category pressed:', categoryId);
     if (onNavigateToFilteredTransactions) {
       onNavigateToFilteredTransactions(categoryId);
     }

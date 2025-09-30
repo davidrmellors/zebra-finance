@@ -392,11 +392,7 @@ class DatabaseService {
       params.push(startDate, endDate);
     }
 
-    console.log('getTotalIncomeAndSpending query:', query);
-    console.log('getTotalIncomeAndSpending params:', params);
-
     const result = await this.db.getFirstAsync<any>(query, params);
-    console.log('getTotalIncomeAndSpending result:', result);
 
     return {
       totalIncome: result?.total_income || 0,

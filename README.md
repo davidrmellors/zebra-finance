@@ -4,7 +4,7 @@ An Expo-based mobile application for the **Investec Q3 2025 Bounty Challenge (Tr
 
 ## 📋 Overview
 
-Zebra Finance connects to your Investec developer account to sync transactions, categorize spending, and leverage GPT-4 to deliver intelligent financial insights. The app stores all data locally using SQLite for privacy and works entirely offline after initial transaction sync.
+Zebra Finance connects to your Investec developer account to sync transactions, categorize spending, and leverage GPT-4o to deliver intelligent financial insights. The app stores all data locally using SQLite for privacy and works entirely offline after initial transaction sync.
 
 ## ✨ Key Features
 
@@ -15,30 +15,55 @@ Zebra Finance connects to your Investec developer account to sync transactions, 
 
 ### 💳 Transaction Management
 - **Automatic Sync**: Pull transactions from Investec API (last 90 days)
-- **Local Storage**: SQLite database for fast, offline access
-- **Categorization**: Assign custom categories to transactions
-- **Search & Filter**: Find transactions quickly
-- **Transaction Details**: View comprehensive transaction information
+- **Local Storage**: SQLite database with indexed queries for fast, offline access
+- **Smart Categorization**: 9 default categories with custom category creation support
+- **Advanced Filtering**: Filter by transaction type (debit/credit) and category
+- **Search**: Find transactions by description
+- **Detailed View**: Comprehensive transaction information with category assignment
+- **Transaction Validation**: Robust data validation and error handling during sync
 
 ### 🤖 AI Chat Assistant
-- **GPT-4 Integration**: Powered by OpenAI's latest model
-- **Context-Aware**: AI has access to your transaction data
-- **Financial Guidance**: Get personalized advice on spending habits
-- **Natural Conversation**: Chat naturally about your finances
+- **GPT-4o Integration**: Powered by OpenAI's latest model
+- **Full Context Awareness**: AI has access to all your transaction history, spending trends, and category breakdowns
+- **Comprehensive Analysis**:
+  - All-time and monthly spending summaries
+  - 6-month spending trend analysis
+  - Category-wise breakdown with transaction counts
+  - Recent transaction samples for context
+- **Financial Guidance**: Get personalized advice based on your actual spending data
+- **Natural Conversation**: Chat naturally about your finances with markdown-formatted responses
+
+### 📊 Category Analytics
+- **Visual Breakdown**: See spending distribution across categories
+- **Salary Tracking**: Set your pay day to track spending cycles
+- **Transaction Filtering**: Tap any category to view filtered transactions
+- **Category Management**: Create, edit, and delete custom categories with colors and emojis
+- **Spending Insights**: View total spending and transaction count per category
 
 ### 💡 Smart Financial Nudges
-- **Proactive Insights**: AI-generated tips based on spending patterns
-- **Category Analysis**: Identify top spending categories
-- **Spending Alerts**: Get notified about high daily spending
-- **Actionable Advice**: Receive specific recommendations to improve financial health
+- **AI-Generated Insights**: Personalized tips based on 30-day spending patterns
+- **Uncategorized Transaction Alerts**: Reminders to categorize transactions
+- **High Spending Warnings**: Daily average spending alerts (>R500/day)
+- **Top Category Insights**: Breakdown of your highest spending categories
+- **Positive Reinforcement**: Encouraging messages for balanced spending
+
+### 💰 Real-Time Balance
+- **Live Account Balance**: View current and available balance from Investec
+- **Multi-Currency Support**: Automatic currency display
+- **Auto-Refresh**: Balance updates after transaction sync
 
 ## 🛠 Tech Stack
 
-- **Frontend**: Expo (React Native) with TypeScript
-- **Database**: SQLite (expo-sqlite)
-- **AI**: OpenAI GPT-4
+- **Frontend**: Expo ~54.0 (React Native 0.81) with TypeScript 5.9
+- **Navigation**: React Navigation 7 with Bottom Tabs
+- **Database**: SQLite (expo-sqlite ~16.0) with async API
+- **AI**: OpenAI GPT-4o
 - **API**: Investec Programmable Banking API
-- **Storage**: Expo Secure Store
+- **Storage**: Expo Secure Store ~15.0 for credentials
+- **UI**:
+  - Expo Linear Gradient for visual polish
+  - React Native Markdown Display for formatted chat responses
+  - Custom theme system with gradients and semantic colors
 
 ## 📦 Installation
 
@@ -89,91 +114,168 @@ Zebra Finance connects to your Investec developer account to sync transactions, 
    - Tap "🔄 Sync Transactions" on the home screen
    - The app will fetch your last 90 days of transactions
 
-5. **Setup AI Assistant**:
-   - Tap "💬 AI Financial Assistant"
-   - When prompted, tap "Open Settings"
-   - Enter your OpenAI API key
+5. **Setup AI Assistant** (Optional):
+   - Tap the "Settings" tab
+   - Enter your OpenAI API key in the provided field
+   - Go to "AI Chat" tab
    - Start chatting with your AI financial advisor!
+   - Note: Chat features work without OpenAI, but AI-generated insights require an API key
+
+### App Navigation
+
+The app uses a **5-tab bottom navigation** structure:
+1. **Home** 🏠 - Dashboard with balance, sync, and financial nudges
+2. **Txns** 📋 - Transaction list with filtering and search
+3. **AI Chat** 💬 - Chat with AI financial assistant
+4. **Categories** 📊 - Category analytics and management
+5. **Settings** ⚙️ - OpenAI API configuration and logout
 
 ### Features Walkthrough
 
+#### Home Screen
+- **Account Balance**: View your current and available balance
+- **Transaction Counter**: See total synced transactions
+- **Sync Button**: Pull latest transactions from Investec
+- **Financial Insights**: AI-generated nudges and spending alerts
+- **Last Sync Timestamp**: Track when you last synced
+
 #### Transaction Management
-- **View All**: Tap "📋 View Transactions" to see your transaction history
-- **Categorize**: Tap any transaction to assign a category
-- **Search**: Use the search bar to find specific transactions
+- **View All**: Browse your complete transaction history
+- **Filter & Search**:
+  - Filter by transaction type (All, Debit, Credit)
+  - Filter by category
+  - Search by description
+- **Categorize**: Tap any transaction to assign or change its category
+- **Detailed View**: See full transaction details including dates, amounts, and running balance
 
 #### AI Chat
 - Ask questions like:
   - "How much did I spend on groceries this month?"
+  - "What's my spending trend over the last 6 months?"
   - "Where can I save money?"
   - "What's my biggest spending category?"
-- The AI has full context of your transactions and spending patterns
+  - "Show me my uncategorized transactions"
+- The AI analyzes:
+  - All transaction history (not just recent)
+  - Monthly spending trends
+  - Category-wise breakdowns
+  - Both categorized and uncategorized transactions
+- Responses formatted in markdown for easy reading
+
+#### Category Analytics
+- **Visual Overview**: See all categories with spending totals
+- **Default Categories**: 9 pre-configured categories (Groceries 🛒, Dining 🍽️, Transportation 🚗, Entertainment 🎬, Shopping 🛍️, Bills 📄, Healthcare 🏥, Income 💰, Other 📌)
+- **Custom Categories**: Create unlimited custom categories with personalized colors and emoji icons
+- **Salary Tracking**: Configure your pay day to track spending cycles
+- **Quick Navigation**: Tap any category to view its transactions in the Transactions tab
+- **Category Management**: Edit category names, colors, icons, or delete categories (transactions remain, just uncategorized)
 
 #### Financial Nudges
-- Automatically generated on the home screen
+- Automatically generated on the home screen based on:
+  - 30-day spending patterns
+  - Uncategorized transaction count
+  - Daily spending averages
+  - Top spending categories
+  - AI-powered insights (when OpenAI is configured)
 - Updates after each transaction sync
-- Provides actionable insights and warnings
+- Color-coded by priority (warning, insight, saving, spending)
 
 ## 📁 Project Structure
 
 ```
 zebra-finance/
 ├── src/
-│   ├── screens/              # UI screens
-│   │   ├── LoginScreen.tsx
-│   │   ├── HomeScreen.tsx
-│   │   ├── TransactionsScreen.tsx
-│   │   ├── TransactionDetailScreen.tsx
-│   │   ├── ChatScreen.tsx
-│   │   └── SettingsScreen.tsx
-│   ├── services/             # Business logic
-│   │   ├── investecAuth.ts   # Investec authentication
-│   │   ├── investecApi.ts    # Investec API client
-│   │   ├── database.ts       # SQLite operations
-│   │   ├── syncService.ts    # Transaction sync
-│   │   ├── openaiService.ts  # OpenAI integration
-│   │   └── nudgeService.ts   # Financial insights
-│   ├── types/                # TypeScript definitions
-│   │   ├── investec.ts
-│   │   └── database.ts
-│   └── utils/                # Utilities
-│       └── secureStorage.ts
-├── App.tsx                   # Main app component
-└── package.json
+│   ├── screens/                    # UI screens (8 total)
+│   │   ├── LoginScreen.tsx         # Investec credential authentication
+│   │   ├── HomeScreen.tsx          # Dashboard with balance, stats, nudges
+│   │   ├── TransactionsScreen.tsx  # Transaction list with filtering/search
+│   │   ├── TransactionDetailScreen.tsx  # Individual transaction view
+│   │   ├── ChatScreen.tsx          # AI assistant interface
+│   │   ├── CategoriesScreen.tsx    # Category analytics & management
+│   │   ├── CategoryManagementScreen.tsx  # Create/edit categories
+│   │   └── SettingsScreen.tsx      # App settings & OpenAI config
+│   ├── navigation/
+│   │   └── MainTabs.tsx            # Bottom tab navigation
+│   ├── services/                   # Business logic layer
+│   │   ├── investecAuth.ts         # OAuth token management
+│   │   ├── investecApi.ts          # Investec API client (accounts, transactions, balance)
+│   │   ├── database.ts             # SQLite operations (transactions, categories)
+│   │   ├── syncService.ts          # Transaction sync with validation
+│   │   ├── openaiService.ts        # GPT-4o chat with full context
+│   │   └── nudgeService.ts         # Financial insight generation
+│   ├── types/                      # TypeScript definitions
+│   │   ├── investec.ts             # Investec API types
+│   │   └── database.ts             # Database schema types
+│   ├── utils/
+│   │   └── secureStorage.ts        # Expo SecureStore wrapper
+│   ├── constants/
+│   │   └── storage.ts              # Storage keys
+│   └── theme/
+│       └── colors.ts               # App-wide color theme & gradients
+├── assets/                         # App icons and images
+├── App.tsx                         # Root component with navigation setup
+├── index.ts                        # Entry point
+├── app.json                        # Expo configuration
+├── package.json                    # Dependencies
+└── tsconfig.json                   # TypeScript config
 ```
 
 ## 🔒 Security & Privacy
 
-- **Local-First**: All transaction data stored locally on device
-- **Secure Storage**: Credentials encrypted with expo-secure-store
-- **No Backend**: No data sent to external servers (except Investec and OpenAI APIs)
-- **API Keys**: Your Investec and OpenAI keys never leave your device
+- **Local-First Architecture**: All transaction data stored locally on device in SQLite
+- **Secure Credential Storage**: Investec and OpenAI credentials encrypted with `expo-secure-store`
+- **No Backend Server**: No data sent to external servers (except Investec and OpenAI APIs)
+- **API Keys**: Your Investec and OpenAI keys stored securely on device only
+- **Data Validation**: Transaction data validated and sanitized before database insertion
+- **Offline-First**: App fully functional offline after initial sync
 
 ## 🎯 Investec Q3 2025 Bounty - Track 1
 
 This app is built for Track 1: **Smart & Secure Banking**, focusing on:
 
-1. **Personalized Insights**: AI-driven analysis of spending patterns
-2. **Actionable Nudges**: Proactive financial recommendations
-3. **Data Privacy**: Local storage, no external data sharing
-4. **User Experience**: Clean, intuitive interface
+1. **Personalized AI Insights**: GPT-4o analyzes your complete transaction history, spending trends, and category breakdowns to provide tailored financial advice
+2. **Proactive Financial Nudges**: Automatic insights based on 30-day patterns, uncategorized transactions, high spending alerts, and AI-generated tips
+3. **Data Privacy**: Local-first SQLite storage with encrypted credentials - no backend server
+4. **User Experience**: Modern gradient UI with bottom tab navigation, markdown-formatted responses, and intuitive category management
+5. **Real-Time Banking**: Live account balance integration with automatic refresh
+
+## 🏗️ Architecture Highlights
+
+- **Separation of Concerns**: Clear separation between UI (screens), business logic (services), and data (database)
+- **Type Safety**: Full TypeScript coverage with strict typing across all layers
+- **Async Database**: Uses modern async SQLite API (`expo-sqlite ~16.0`) for non-blocking operations
+- **Database Features**:
+  - Indexed queries on `transaction_date`, `category_id`, and `account_id` for fast lookups
+  - Unique constraint on transactions to prevent duplicates during sync
+  - Foreign key relationships between transactions and categories
+  - Batch insert operations for efficient syncing
+  - Built-in aggregation queries for category totals and spending summaries
+- **Error Handling**: Robust error handling throughout with user-friendly alerts and console logging
+- **State Management**: React hooks for local state, AsyncStorage for app preferences (salary day, etc.)
+- **Navigation**: Modal-based overlays for transaction details and settings to preserve main navigation state
+- **OpenAI Integration**: Context-aware AI with full transaction history, spending trends, and category breakdowns
 
 ## 🐛 Known Limitations
 
 - Currently supports Investec South Africa only
-- Requires OpenAI API key (paid service)
-- Limited to last 90 days of transactions
-- No multi-account aggregation
+- Requires OpenAI API key (paid service) for AI chat features
+- Limited to last 90 days of transactions per sync
+- Single account view (first account used if multiple exist)
+- No transaction export functionality yet
+- Nudges limited to 30-day analysis window
 
 ## 🔮 Future Enhancements
 
-- Budget planning and tracking
-- Spending goals and alerts
-- Financial health score
-- Export reports (PDF, CSV)
-- Recurring transaction detection
-- Bill reminders
-- Multi-bank support
+- **Budget Planning**: Set monthly budgets per category with alerts
+- **Spending Goals**: Track progress toward savings goals
+- **Financial Health Score**: Algorithmic score based on spending habits
+- **Export Reports**: Generate PDF/CSV reports of transactions and insights
+- **Recurring Transaction Detection**: Automatically identify subscriptions and bills
+- **Bill Reminders**: Notifications for upcoming recurring payments
+- **Multi-Bank Support**: Aggregate transactions from multiple banks
+- **Split Transactions**: Assign multiple categories to a single transaction
+- **Merchant Recognition**: Auto-categorize based on merchant history
+- **Custom Nudge Rules**: User-defined triggers for personalized alerts
 
 ## 📄 License
 
