@@ -1,11 +1,13 @@
 import { investecApi } from './investecApi';
 import { database } from './database';
 import { InvestecTransaction } from '../types/investec';
+import { secureStorage } from '../utils/secureStorage';
 
 export interface SyncResult {
   success: boolean;
   newTransactions: number;
   totalTransactions: number;
+  lastSyncTime?: number;
   error?: string;
 }
 
@@ -118,10 +120,15 @@ export class SyncService {
 
       const totalTransactions = await database.getTotalTransactions();
 
+      // Save the sync timestamp
+      const syncTime = Date.now();
+      await secureStorage.saveLastSyncTime(syncTime);
+
       return {
         success: true,
         newTransactions: validTransactions.length,
         totalTransactions,
+        lastSyncTime: syncTime,
       };
     } catch (error) {
       console.error('Sync error:', error);
@@ -153,6 +160,13 @@ export class SyncService {
    */
   isSyncInProgress(): boolean {
     return this.isSyncing;
+  }
+
+  /**
+   * Get the last sync time
+   */
+  async getLastSyncTime(): Promise<number | null> {
+    return await secureStorage.getLastSyncTime();
   }
 }
 

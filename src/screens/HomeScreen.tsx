@@ -15,10 +15,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
   const [transactionCount, setTransactionCount] = useState(0);
   const [nudges, setNudges] = useState<FinancialNudge[]>([]);
   const [loadingNudges, setLoadingNudges] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
 
   useEffect(() => {
     loadTransactionCount();
     loadNudges();
+    loadLastSyncTime();
   }, []);
 
   const loadTransactionCount = async () => {
@@ -42,6 +44,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
     }
   };
 
+  const loadLastSyncTime = async () => {
+    try {
+      const timestamp = await syncService.getLastSyncTime();
+      setLastSyncTime(timestamp);
+    } catch (error) {
+      console.error('Error loading last sync time:', error);
+    }
+  };
+
   const handleSync = async () => {
     setSyncing(true);
 
@@ -54,6 +65,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
           `Synced ${result.newTransactions} transactions. Total: ${result.totalTransactions}`
         );
         setTransactionCount(result.totalTransactions);
+        if (result.lastSyncTime) {
+          setLastSyncTime(result.lastSyncTime);
+        }
         loadNudges(); // Refresh nudges after sync
       } else {
         Alert.alert('Sync Failed', result.error || 'Unknown error occurred');
@@ -79,6 +93,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
       default:
         return theme.semantic.infoBright;
     }
+  };
+
+  const formatLastSyncTime = (timestamp: number | null) => {
+    if (!timestamp) return 'Never synced';
+
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-ZA', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
@@ -125,6 +163,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
                 )}
               </TouchableOpacity>
             </LinearGradient>
+
+            {lastSyncTime !== null && (
+              <Text style={styles.lastSyncText}>
+                Last synced: {formatLastSyncTime(lastSyncTime)}
+              </Text>
+            )}
 
             {/* Financial Nudges */}
             <View style={styles.nudgesSection}>
@@ -231,6 +275,13 @@ const styles = StyleSheet.create({
     color: theme.text.primary,
     fontSize: 16,
     fontWeight: '600',
+  },
+  lastSyncText: {
+    fontSize: 12,
+    color: theme.text.tertiary,
+    textAlign: 'center',
+    marginTop: -12,
+    marginBottom: 16,
   },
   nudgesSection: {
     marginTop: 8,

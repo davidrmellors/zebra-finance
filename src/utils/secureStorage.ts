@@ -4,6 +4,7 @@ import { InvestecCredentials } from '../types/investec';
 const CREDENTIALS_KEY = 'investec_credentials';
 const ACCESS_TOKEN_KEY = 'investec_access_token';
 const TOKEN_EXPIRY_KEY = 'investec_token_expiry';
+const LAST_SYNC_KEY = 'last_sync_time';
 
 export const secureStorage = {
   async saveCredentials(credentials: InvestecCredentials): Promise<void> {
@@ -44,5 +45,14 @@ export const secureStorage = {
   async isAuthenticated(): Promise<boolean> {
     const credentials = await this.getCredentials();
     return credentials !== null;
+  },
+
+  async saveLastSyncTime(timestamp: number): Promise<void> {
+    await SecureStore.setItemAsync(LAST_SYNC_KEY, timestamp.toString());
+  },
+
+  async getLastSyncTime(): Promise<number | null> {
+    const timestamp = await SecureStore.getItemAsync(LAST_SYNC_KEY);
+    return timestamp ? parseInt(timestamp) : null;
   }
 };
