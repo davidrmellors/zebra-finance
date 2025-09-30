@@ -114,9 +114,6 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onBack, onOpenSettings }
       keyboardVerticalOffset={0}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
         <Text style={styles.title}>🦓 Zebra Assistant</Text>
         <TouchableOpacity onPress={onOpenSettings} style={styles.settingsButton}>
           <Text style={styles.settingsButtonText}>⚙️</Text>
@@ -172,20 +169,14 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  backButton: {
-    marginRight: 16,
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
     flex: 1,
+    textAlign: 'center',
   },
   settingsButton: {
     padding: 8,

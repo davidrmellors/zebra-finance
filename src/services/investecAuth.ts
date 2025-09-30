@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { encode as base64Encode } from 'base-64';
 import { InvestecCredentials, InvestecTokenResponse } from '../types/investec';
 import { secureStorage } from '../utils/secureStorage';
 
@@ -68,9 +69,9 @@ export class InvestecAuthService {
    * Fetch access token from Investec API
    */
   private async fetchAccessToken(credentials: InvestecCredentials): Promise<InvestecTokenResponse> {
-    const basicAuth = Buffer.from(
+    const basicAuth = base64Encode(
       `${credentials.clientId}:${credentials.clientSecret}`
-    ).toString('base64');
+    );
 
     try {
       const response = await axios.post<InvestecTokenResponse>(

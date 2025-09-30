@@ -44,31 +44,83 @@ export class SyncService {
       // Fetch transactions from Investec
       const investecTransactions = await investecApi.getAllTransactions(fromDate, toDate);
 
-      // Insert transactions into database
-      const dbTransactions = investecTransactions.map((t) => ({
-        accountId: t.accountId,
-        type: t.type,
-        transactionType: t.transactionType,
-        status: t.status,
-        description: t.description,
-        cardNumber: t.cardNumber,
-        postedOrder: t.postedOrder,
-        postingDate: t.postingDate,
-        valueDate: t.valueDate,
-        actionDate: t.actionDate,
-        transactionDate: t.transactionDate,
-        amount: t.amount,
-        runningBalance: t.runningBalance,
-        categoryId: null, // Will be assigned by user
-      }));
+      console.log('=== Investec API Response ===');
+      console.log(`Received ${investecTransactions.length} transactions`);
 
-      await database.insertTransactionsBatch(dbTransactions);
+      if (investecTransactions.length > 0) {
+        console.log('First transaction sample:', JSON.stringify(investecTransactions[0], null, 2));
+      }
+
+      // Validate and sanitize transactions
+      const validTransactions: any[] = [];
+      const invalidTransactions: any[] = [];
+
+      investecTransactions.forEach((t, index) => {
+        // Check for required fields
+        const missingFields: string[] = [];
+
+        if (!t.accountId) missingFields.push('accountId');
+        if (!t.type) missingFields.push('type');
+        if (!t.status) missingFields.push('status');
+        if (!t.description) missingFields.push('description');
+        if (!t.transactionDate) missingFields.push('transactionDate');
+        if (t.amount === undefined || t.amount === null) missingFields.push('amount');
+
+        if (missingFields.length > 0) {
+          console.warn(`Transaction ${index} missing fields:`, missingFields);
+          console.warn('Transaction data:', JSON.stringify(t, null, 2));
+          invalidTransactions.push({ index, transaction: t, missingFields });
+        } else {
+          // Handle null transactionType - some transactions legitimately don't have this field
+          const transactionType = t.transactionType || 'Other';
+
+          if (!t.transactionType) {
+            console.log(`Transaction ${index} has null transactionType, using default: "${transactionType}"`);
+          }
+
+          validTransactions.push({
+            accountId: t.accountId,
+            type: t.type,
+            transactionType: transactionType,
+            status: t.status,
+            description: t.description,
+            cardNumber: t.cardNumber || '',
+            postedOrder: t.postedOrder || 0,
+            postingDate: t.postingDate || '',
+            valueDate: t.valueDate || '',
+            actionDate: t.actionDate || '',
+            transactionDate: t.transactionDate,
+            amount: t.amount,
+            runningBalance: t.runningBalance || 0,
+            categoryId: null, // Will be assigned by user
+          });
+        }
+      });
+
+      console.log(`Valid transactions: ${validTransactions.length}`);
+      console.log(`Invalid transactions: ${invalidTransactions.length}`);
+
+      if (invalidTransactions.length > 0) {
+        console.error('Invalid transactions detected:', invalidTransactions);
+      }
+
+      if (validTransactions.length === 0) {
+        return {
+          success: false,
+          newTransactions: 0,
+          totalTransactions: 0,
+          error: `No valid transactions found. ${invalidTransactions.length} transactions had missing required fields.`,
+        };
+      }
+
+      // Insert valid transactions into database
+      await database.insertTransactionsBatch(validTransactions);
 
       const totalTransactions = await database.getTotalTransactions();
 
       return {
         success: true,
-        newTransactions: investecTransactions.length,
+        newTransactions: validTransactions.length,
         totalTransactions,
       };
     } catch (error) {

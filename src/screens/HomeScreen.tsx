@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
-import { investecAuth } from '../services/investecAuth';
 import { syncService } from '../services/syncService';
 import { database } from '../services/database';
 import { nudgeService, FinancialNudge } from '../services/nudgeService';
 
 interface HomeScreenProps {
   onLogout: () => void;
-  onNavigateToTransactions: () => void;
-  onNavigateToChat: () => void;
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onNavigateToTransactions, onNavigateToChat }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
   const [syncing, setSyncing] = useState(false);
   const [transactionCount, setTransactionCount] = useState(0);
   const [nudges, setNudges] = useState<FinancialNudge[]>([]);
@@ -69,11 +66,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onNavigateToTr
     }
   };
 
-  const handleLogout = async () => {
-    await investecAuth.logout();
-    onLogout();
-  };
-
   const getNudgeColor = (category: FinancialNudge['category']) => {
     switch (category) {
       case 'warning':
@@ -88,73 +80,63 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onNavigateToTr
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>🦓 Zebra Finance</Text>
         <Text style={styles.subtitle}>Welcome to your AI Finance Assistant</Text>
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Total Transactions</Text>
-          <Text style={styles.statValue}>{transactionCount}</Text>
-        </View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+        alwaysBounceVertical={true}
+      >
+        <View style={styles.content}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Total Transactions</Text>
+            <Text style={styles.statValue}>{transactionCount}</Text>
+          </View>
 
-        <TouchableOpacity
-          style={[styles.syncButton, syncing && styles.buttonDisabled]}
-          onPress={handleSync}
-          disabled={syncing}
-        >
-          {syncing ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>🔄 Sync Transactions</Text>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.syncButton, syncing && styles.buttonDisabled]}
+            onPress={handleSync}
+            disabled={syncing}
+          >
+            {syncing ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>🔄 Sync Transactions</Text>
+            )}
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.viewTransactionsButton}
-          onPress={onNavigateToTransactions}
-        >
-          <Text style={styles.buttonText}>📋 View Transactions</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.chatButton}
-          onPress={onNavigateToChat}
-        >
-          <Text style={styles.buttonText}>💬 AI Financial Assistant</Text>
-        </TouchableOpacity>
-
-        {/* Financial Nudges */}
-        <View style={styles.nudgesSection}>
-          <Text style={styles.sectionTitle}>💡 Financial Insights</Text>
-          {loadingNudges ? (
-            <ActivityIndicator style={styles.nudgeLoader} color="#6C63FF" />
-          ) : (
-            nudges.slice(0, 3).map((nudge) => (
-              <View
-                key={nudge.id}
-                style={[
-                  styles.nudgeCard,
-                  { borderLeftColor: getNudgeColor(nudge.category) },
-                ]}
-              >
-                <Text style={styles.nudgeIcon}>{nudge.icon}</Text>
-                <View style={styles.nudgeContent}>
-                  <Text style={styles.nudgeTitle}>{nudge.title}</Text>
-                  <Text style={styles.nudgeMessage}>{nudge.message}</Text>
+          {/* Financial Nudges */}
+          <View style={styles.nudgesSection}>
+            <Text style={styles.sectionTitle}>💡 Financial Insights</Text>
+            {loadingNudges ? (
+              <ActivityIndicator style={styles.nudgeLoader} color="#6C63FF" />
+            ) : (
+              nudges.slice(0, 3).map((nudge) => (
+                <View
+                  key={nudge.id}
+                  style={[
+                    styles.nudgeCard,
+                    { borderLeftColor: getNudgeColor(nudge.category) },
+                  ]}
+                >
+                  <Text style={styles.nudgeIcon}>{nudge.icon}</Text>
+                  <View style={styles.nudgeContent}>
+                    <Text style={styles.nudgeTitle}>{nudge.title}</Text>
+                    <Text style={styles.nudgeMessage}>{nudge.message}</Text>
+                  </View>
                 </View>
-              </View>
-            ))
-          )}
+              ))
+            )}
+          </View>
         </View>
-      </View>
-
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -166,6 +148,7 @@ const styles = StyleSheet.create({
   header: {
     padding: 20,
     paddingTop: 60,
+    backgroundColor: '#f5f5f5',
   },
   title: {
     fontSize: 32,
@@ -178,7 +161,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   content: {
     backgroundColor: '#fff',
@@ -212,20 +201,6 @@ const styles = StyleSheet.create({
   },
   syncButton: {
     backgroundColor: '#4CAF50',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  viewTransactionsButton: {
-    backgroundColor: '#2196F3',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  chatButton: {
-    backgroundColor: '#9C27B0',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
@@ -276,19 +251,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#666',
     lineHeight: 18,
-  },
-  logoutButton: {
-    backgroundColor: '#ff4444',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 40,
-  },
-  logoutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

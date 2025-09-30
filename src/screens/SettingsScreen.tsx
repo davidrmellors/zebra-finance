@@ -10,14 +10,16 @@ import {
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { openaiService } from '../services/openaiService';
+import { investecAuth } from '../services/investecAuth';
 
 const OPENAI_KEY = 'openai_api_key';
 
 interface SettingsScreenProps {
   onBack: () => void;
+  onLogout: () => void;
 }
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onLogout }) => {
   const [apiKey, setApiKey] = useState('');
   const [hasApiKey, setHasApiKey] = useState(false);
 
@@ -136,6 +138,32 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
             Built for Investec Q3 2025 Bounty Challenge
           </Text>
         </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account</Text>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={async () => {
+              Alert.alert(
+                'Logout',
+                'Are you sure you want to logout?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Logout',
+                    style: 'destructive',
+                    onPress: async () => {
+                      await investecAuth.logout();
+                      onLogout();
+                    },
+                  },
+                ]
+              );
+            }}
+          >
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -238,5 +266,16 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 8,
     lineHeight: 20,
+  },
+  logoutButton: {
+    backgroundColor: '#ff4444',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

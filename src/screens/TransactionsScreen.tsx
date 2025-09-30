@@ -112,9 +112,6 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
         <Text style={styles.title}>Transactions</Text>
       </View>
 
@@ -160,15 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#6C63FF',
     padding: 20,
     paddingTop: 50,
-    flexDirection: 'row',
     alignItems: 'center',
-  },
-  backButton: {
-    marginRight: 16,
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
   },
   title: {
     fontSize: 24,

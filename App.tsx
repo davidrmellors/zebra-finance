@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import { LoginScreen } from './src/screens/LoginScreen';
-import { HomeScreen } from './src/screens/HomeScreen';
-import { TransactionsScreen } from './src/screens/TransactionsScreen';
 import { TransactionDetailScreen } from './src/screens/TransactionDetailScreen';
-import { ChatScreen } from './src/screens/ChatScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { MainTabs } from './src/navigation/MainTabs';
 import { investecAuth } from './src/services/investecAuth';
 import { database } from './src/services/database';
 
-type Screen = 'home' | 'transactions' | 'transactionDetail' | 'chat' | 'settings';
+type OverlayScreen = 'none' | 'transactionDetail' | 'settings';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentScreen, setCurrentScreen] = useState<Screen>('home');
+  const [overlayScreen, setOverlayScreen] = useState<OverlayScreen>('none');
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -39,45 +38,28 @@ export default function App() {
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
-    setCurrentScreen('home');
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    setCurrentScreen('home');
-  };
-
-  const handleNavigateToTransactions = () => {
-    setCurrentScreen('transactions');
-  };
-
-  const handleNavigateToHome = () => {
-    setCurrentScreen('home');
+    setOverlayScreen('none');
   };
 
   const handleTransactionPress = (transactionId: number) => {
     setSelectedTransactionId(transactionId);
-    setCurrentScreen('transactionDetail');
+    setOverlayScreen('transactionDetail');
   };
 
   const handleBackFromDetail = () => {
-    setCurrentScreen('transactions');
-  };
-
-  const handleNavigateToChat = () => {
-    setCurrentScreen('chat');
+    setOverlayScreen('none');
   };
 
   const handleNavigateToSettings = () => {
-    setCurrentScreen('settings');
-  };
-
-  const handleBackFromChat = () => {
-    setCurrentScreen('home');
+    setOverlayScreen('settings');
   };
 
   const handleBackFromSettings = () => {
-    setCurrentScreen('home');
+    setOverlayScreen('none');
   };
 
   if (isLoading) {
@@ -88,61 +70,46 @@ export default function App() {
     );
   }
 
-  const renderScreen = () => {
-    if (!isAuthenticated) {
-      return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
-    }
+  if (!isAuthenticated) {
+    return (
+      <>
+        <LoginScreen onLoginSuccess={handleLoginSuccess} />
+        <StatusBar style="auto" />
+      </>
+    );
+  }
 
-    switch (currentScreen) {
-      case 'home':
-        return (
-          <HomeScreen
-            onLogout={handleLogout}
-            onNavigateToTransactions={handleNavigateToTransactions}
-            onNavigateToChat={handleNavigateToChat}
-          />
-        );
-      case 'transactions':
-        return (
-          <TransactionsScreen
-            onTransactionPress={handleTransactionPress}
-            onBack={handleNavigateToHome}
-          />
-        );
-      case 'transactionDetail':
-        return selectedTransactionId ? (
-          <TransactionDetailScreen
-            transactionId={selectedTransactionId}
-            onBack={handleBackFromDetail}
-          />
-        ) : null;
-      case 'chat':
-        return (
-          <ChatScreen
-            onBack={handleBackFromChat}
-            onOpenSettings={handleNavigateToSettings}
-          />
-        );
-      case 'settings':
-        return (
-          <SettingsScreen
-            onBack={handleBackFromSettings}
-          />
-        );
-      default:
-        return (
-          <HomeScreen
-            onLogout={handleLogout}
-            onNavigateToTransactions={handleNavigateToTransactions}
-            onNavigateToChat={handleNavigateToChat}
-          />
-        );
-    }
-  };
+  // Show overlay screens on top of tabs
+  if (overlayScreen === 'transactionDetail' && selectedTransactionId) {
+    return (
+      <>
+        <TransactionDetailScreen
+          transactionId={selectedTransactionId}
+          onBack={handleBackFromDetail}
+        />
+        <StatusBar style="auto" />
+      </>
+    );
+  }
+
+  if (overlayScreen === 'settings') {
+    return (
+      <>
+        <SettingsScreen onBack={handleBackFromSettings} onLogout={handleLogout} />
+        <StatusBar style="auto" />
+      </>
+    );
+  }
 
   return (
     <>
-      {renderScreen()}
+      <NavigationContainer>
+        <MainTabs
+          onLogout={handleLogout}
+          onNavigateToTransactionDetail={handleTransactionPress}
+          onNavigateToSettings={handleNavigateToSettings}
+        />
+      </NavigationContainer>
       <StatusBar style="auto" />
     </>
   );
