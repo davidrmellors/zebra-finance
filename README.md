@@ -311,7 +311,7 @@ This app is built for Track 1: **Smart & Secure Banking**, focusing on:
 
 ## 📄 License
 
-This project is built for the Investec Q3 2025 Bounty Challenge.
+[MIT License](LICENSE) - This project is built for the Investec Q3 2025 Bounty Challenge.
 
 ## 👨‍💻 Author
 
