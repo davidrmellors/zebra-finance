@@ -65,6 +65,38 @@ Zebra Finance connects to your Investec developer account to sync transactions, 
   - React Native Markdown Display for formatted chat responses
   - Custom theme system with gradients and semantic colors
 
+## 📱 Screenshots
+
+### Authentication & Setup
+
+| Login Screen | Home - Initial State | Home - After Sync |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/01-login-screen.png" width="250"/> | <img src="docs/screenshots/02-home-screen-empty.png" width="250"/> | <img src="docs/screenshots/03-home-screen-synced.png" width="250"/> |
+
+### Transactions & Filtering
+
+| Transaction List | Transaction Filters | Transaction Detail |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/04-transactions-list.png" width="250"/> | <img src="docs/screenshots/05-transaction-filters.png" width="250"/> | <img src="docs/screenshots/09-transaction-detail.png" width="250"/> |
+
+### AI Assistant
+
+| AI Chat Setup | AI Chat | AI Financial Insights |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/06-ai-chat-setup.png" width="250"/> | <img src="docs/screenshots/12-ai-chat-conversation.png" width="250"/> | <img src="docs/screenshots/13-ai-chat-insights.png" width="250"/> |
+
+### Category Management
+
+| Categories - Empty | Categories - With Data | Filtered by Category |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/08-categories-empty.png" width="250"/> | <img src="docs/screenshots/10-categories-with-data.png" width="250"/> | <img src="docs/screenshots/11-transactions-filtered-by-category.png" width="250"/> |
+
+### Settings
+
+| Settings |
+|:---:|
+| <img src="docs/screenshots/07-settings-screen.png" width="250"/> |
+
 ## 📦 Installation
 
 ### Prerequisites
@@ -283,7 +315,7 @@ This project is built for the Investec Q3 2025 Bounty Challenge.
 
 ## 👨‍💻 Author
 
-David Mellors
+[David Mellors](https://www.linkedin.com/in/drmellors/)
 
 ## 🙏 Acknowledgments
 
