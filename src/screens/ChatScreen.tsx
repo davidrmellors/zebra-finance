@@ -115,9 +115,6 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onBack, onOpenSettings }
     >
       <View style={styles.header}>
         <Text style={styles.title}>🦓 Zebra Assistant</Text>
-        <TouchableOpacity onPress={onOpenSettings} style={styles.settingsButton}>
-          <Text style={styles.settingsButtonText}>⚙️</Text>
-        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -165,24 +162,23 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#6C63FF',
-    padding: 20,
+    paddingHorizontal: 20,
     paddingTop: 50,
-    flexDirection: 'row',
+    paddingBottom: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 4,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     color: '#fff',
-    flex: 1,
     textAlign: 'center',
-  },
-  settingsButton: {
-    padding: 8,
-  },
-  settingsButtonText: {
-    fontSize: 20,
+    letterSpacing: 0.5,
   },
   messagesList: {
     padding: 16,

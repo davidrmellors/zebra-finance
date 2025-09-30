@@ -85,9 +85,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onLogout
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
         <Text style={styles.title}>Settings</Text>
       </View>
 
@@ -176,22 +173,23 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#6C63FF',
-    padding: 20,
+    paddingHorizontal: 20,
     paddingTop: 50,
-    flexDirection: 'row',
+    paddingBottom: 20,
     alignItems: 'center',
-  },
-  backButton: {
-    marginRight: 16,
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 4,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     color: '#fff',
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
   content: {
     flex: 1,
