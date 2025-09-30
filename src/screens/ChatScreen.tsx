@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 import { openaiService, ChatMessage } from '../services/openaiService';
 import { theme } from '../theme/colors';
 
@@ -21,6 +22,7 @@ interface ChatScreenProps {
 }
 
 export const ChatScreen: React.FC<ChatScreenProps> = ({ onBack, onOpenSettings }) => {
+  const navigation = useNavigation();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
@@ -40,11 +42,11 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onBack, onOpenSettings }
         'Please add your OpenAI API key in settings to use the AI assistant.',
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Open Settings', onPress: onOpenSettings },
+          { text: 'Open Settings', onPress: () => navigation.navigate('Settings' as never) },
         ]
       );
     }
-  }, []);
+  }, [navigation]);
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
@@ -55,7 +57,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ onBack, onOpenSettings }
         'Please add your OpenAI API key in settings to use the AI assistant.',
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Open Settings', onPress: onOpenSettings },
+          { text: 'Open Settings', onPress: () => navigation.navigate('Settings' as never) },
         ]
       );
       return;

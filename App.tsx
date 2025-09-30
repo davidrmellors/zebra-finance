@@ -115,7 +115,6 @@ export default function App() {
           <SettingsScreen
             onBack={handleBackFromSettings}
             onLogout={handleLogout}
-            onNavigateToCategoryManagement={handleNavigateToCategoryManagement}
           />
         </View>
       )}

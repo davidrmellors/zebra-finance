@@ -62,11 +62,18 @@ class OpenAIService {
         ? totalSpending / transactions.filter(t => t.amount < 0).length
         : 0;
 
-      // Format category breakdown
-      const categoryBreakdown = categoryTotals
+      // Format category breakdown (including uncategorized)
+      const categorizedSpending = categoryTotals
         .filter((cat) => cat.total < 0)
         .map((cat) => `${cat.categoryName}: R${Math.abs(cat.total).toFixed(2)} (${cat.count} transactions)`)
         .join('\n');
+
+      // Calculate uncategorized spending
+      const uncategorizedTransactions = transactions.filter((t) => t.amount < 0 && !t.categoryName);
+      const uncategorizedSpending = uncategorizedTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+      const categoryBreakdown = categorizedSpending +
+        (uncategorizedSpending > 0 ? `\nUncategorized: R${uncategorizedSpending.toFixed(2)} (${uncategorizedTransactions.length} transactions)` : '');
 
       // Get recent transaction samples
       const recentTransactions = transactions
@@ -84,12 +91,12 @@ class OpenAIService {
 - Total Transactions: ${transactions.length}
 
 ## Spending by Category
-${categoryBreakdown || 'No categorized transactions yet'}
+${categoryBreakdown || 'No transactions yet'}
 
 ## Recent Transactions (Last 10)
 ${recentTransactions || 'No transactions yet'}
 
-Use this information to provide personalized financial insights and advice to the user.
+Use this information to provide personalized financial insights and advice to the user. Even if transactions are uncategorized, you can still analyze spending patterns and totals.
 `;
     } catch (error) {
       console.error('Error getting financial context:', error);

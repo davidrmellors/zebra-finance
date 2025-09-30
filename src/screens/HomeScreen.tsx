@@ -4,6 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { syncService } from '../services/syncService';
 import { database } from '../services/database';
 import { nudgeService, FinancialNudge } from '../services/nudgeService';
+import { investecApi } from '../services/investecApi';
+import { InvestecBalance } from '../types/investec';
 import { theme } from '../theme/colors';
 
 interface HomeScreenProps {
@@ -16,11 +18,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
   const [nudges, setNudges] = useState<FinancialNudge[]>([]);
   const [loadingNudges, setLoadingNudges] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
+  const [balance, setBalance] = useState<InvestecBalance | null>(null);
+  const [loadingBalance, setLoadingBalance] = useState(false);
 
   useEffect(() => {
     loadTransactionCount();
     loadNudges();
     loadLastSyncTime();
+    loadBalance();
   }, []);
 
   const loadTransactionCount = async () => {
@@ -53,6 +58,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
     }
   };
 
+  const loadBalance = async () => {
+    setLoadingBalance(true);
+    try {
+      const accounts = await investecApi.getAccounts();
+      if (accounts.length > 0) {
+        // Get balance for the first account
+        const accountBalance = await investecApi.getAccountBalance(accounts[0].accountId);
+        setBalance(accountBalance);
+      }
+    } catch (error) {
+      console.error('Error loading balance:', error);
+    } finally {
+      setLoadingBalance(false);
+    }
+  };
+
   const handleSync = async () => {
     setSyncing(true);
 
@@ -69,6 +90,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
           setLastSyncTime(result.lastSyncTime);
         }
         loadNudges(); // Refresh nudges after sync
+        loadBalance(); // Refresh balance after sync
       } else {
         Alert.alert('Sync Failed', result.error || 'Unknown error occurred');
       }
@@ -135,14 +157,43 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
           alwaysBounceVertical={true}
         >
           <View style={styles.content}>
+            {/* Account Balance Card */}
             <LinearGradient
               colors={[theme.accent.primary, theme.accent.secondary]}
-              style={styles.statCard}
+              style={styles.balanceCard}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.statLabel}>Total Transactions</Text>
-              <Text style={styles.statValue}>{transactionCount}</Text>
+              <Text style={styles.statLabel}>Account Balance</Text>
+              {loadingBalance ? (
+                <ActivityIndicator color={theme.text.primary} />
+              ) : balance ? (
+                <>
+                  <Text style={styles.balanceValue}>
+                    {balance.currency} {balance.currentBalance.toLocaleString('en-ZA', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </Text>
+                  <Text style={styles.balanceSubtext}>
+                    Available: {balance.currency} {balance.availableBalance.toLocaleString('en-ZA', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.balanceError}>Unable to load balance</Text>
+              )}
+            </LinearGradient>
+
+            {/* Transaction Count Card */}
+            <LinearGradient
+              colors={theme.gradients.card}
+              style={styles.statCard}
+            >
+              <Text style={styles.statLabelSecondary}>Total Transactions</Text>
+              <Text style={styles.statValueSecondary}>{transactionCount}</Text>
             </LinearGradient>
 
             <LinearGradient
@@ -239,13 +290,37 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
   },
-  statCard: {
+  balanceCard: {
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: theme.border.accent,
+  },
+  balanceValue: {
+    color: theme.text.primary,
+    fontSize: 36,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  balanceSubtext: {
+    color: theme.text.primary,
+    fontSize: 14,
+    opacity: 0.8,
+  },
+  balanceError: {
+    color: theme.text.primary,
+    fontSize: 14,
+    opacity: 0.6,
+  },
+  statCard: {
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: theme.border.primary,
   },
   statLabel: {
     color: theme.text.primary,
@@ -254,9 +329,21 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 12,
   },
+  statLabelSecondary: {
+    color: theme.text.secondary,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
   statValue: {
     color: theme.text.primary,
     fontSize: 48,
+    fontWeight: 'bold',
+  },
+  statValueSecondary: {
+    color: theme.text.primary,
+    fontSize: 32,
     fontWeight: 'bold',
   },
   syncButton: {

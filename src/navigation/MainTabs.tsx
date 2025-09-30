@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '../screens/HomeScreen';
 import { TransactionsScreen } from '../screens/TransactionsScreen';
 import { ChatScreen } from '../screens/ChatScreen';
+import { CategoriesScreen } from '../screens/CategoriesScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { theme } from '../theme/colors';
 
@@ -20,7 +21,7 @@ export const MainTabs: React.FC<MainTabsProps> = ({
   onLogout,
   onNavigateToTransactionDetail,
   onNavigateToSettings,
-  onNavigateToCategoryManagement
+  onNavigateToCategoryManagement,
 }) => {
   return (
     <Tab.Navigator
@@ -32,13 +33,16 @@ export const MainTabs: React.FC<MainTabsProps> = ({
           backgroundColor: theme.background.card,
           borderTopWidth: 1,
           borderTopColor: theme.border.primary,
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          paddingBottom: 20,
+          paddingTop: 8,
+          paddingLeft: 10,
+          paddingRight: 10,
+          height: 85,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '600',
+          paddingBottom: 5,
         },
       }}
     >
@@ -55,7 +59,7 @@ export const MainTabs: React.FC<MainTabsProps> = ({
       <Tab.Screen
         name="Transactions"
         options={{
-          tabBarLabel: 'Transactions',
+          tabBarLabel: 'Txns',
           tabBarIcon: ({ color }) => <TabIcon icon="📋" color={color} />,
         }}
       >
@@ -83,6 +87,15 @@ export const MainTabs: React.FC<MainTabsProps> = ({
       </Tab.Screen>
 
       <Tab.Screen
+        name="Categories"
+        options={{
+          tabBarLabel: 'Categories',
+          tabBarIcon: ({ color }) => <TabIcon icon="📊" color={color} />,
+        }}
+        component={CategoriesScreen}
+      />
+
+      <Tab.Screen
         name="Settings"
         options={{
           tabBarLabel: 'Settings',
@@ -93,7 +106,6 @@ export const MainTabs: React.FC<MainTabsProps> = ({
           <SettingsScreen
             onBack={() => {}}
             onLogout={onLogout}
-            onNavigateToCategoryManagement={onNavigateToCategoryManagement}
           />
         )}
       </Tab.Screen>
