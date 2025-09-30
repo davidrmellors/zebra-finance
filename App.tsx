@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -17,6 +17,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [overlayScreen, setOverlayScreen] = useState<OverlayScreen>('none');
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
+  const navigationRef = useRef<any>(null);
 
   useEffect(() => {
     initializeApp();
@@ -80,37 +81,31 @@ export default function App() {
     );
   }
 
-  // Show overlay screens on top of tabs
-  if (overlayScreen === 'transactionDetail' && selectedTransactionId) {
-    return (
-      <>
-        <TransactionDetailScreen
-          transactionId={selectedTransactionId}
-          onBack={handleBackFromDetail}
-        />
-        <StatusBar style="light" />
-      </>
-    );
-  }
-
-  if (overlayScreen === 'settings') {
-    return (
-      <>
-        <SettingsScreen onBack={handleBackFromSettings} onLogout={handleLogout} />
-        <StatusBar style="light" />
-      </>
-    );
-  }
-
   return (
     <>
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         <MainTabs
           onLogout={handleLogout}
           onNavigateToTransactionDetail={handleTransactionPress}
           onNavigateToSettings={handleNavigateToSettings}
         />
       </NavigationContainer>
+
+      {overlayScreen === 'transactionDetail' && selectedTransactionId && (
+        <View style={StyleSheet.absoluteFill}>
+          <TransactionDetailScreen
+            transactionId={selectedTransactionId}
+            onBack={handleBackFromDetail}
+          />
+        </View>
+      )}
+
+      {overlayScreen === 'settings' && (
+        <View style={StyleSheet.absoluteFill}>
+          <SettingsScreen onBack={handleBackFromSettings} onLogout={handleLogout} />
+        </View>
+      )}
+
       <StatusBar style="light" />
     </>
   );
