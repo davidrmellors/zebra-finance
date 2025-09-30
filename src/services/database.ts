@@ -308,6 +308,28 @@ class DatabaseService {
     return result.lastInsertRowId;
   }
 
+  async updateCategory(id: number, name: string, color: string, icon?: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    await this.db.runAsync(
+      'UPDATE categories SET name = ?, color = ?, icon = ? WHERE id = ?',
+      [name, color, icon || null, id]
+    );
+  }
+
+  async deleteCategory(id: number): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    // Set category_id to null for all transactions with this category
+    await this.db.runAsync(
+      'UPDATE transactions SET category_id = NULL WHERE category_id = ?',
+      [id]
+    );
+
+    // Delete the category
+    await this.db.runAsync('DELETE FROM categories WHERE id = ?', [id]);
+  }
+
   // Statistics
   async getCategoryTotals(startDate?: string, endDate?: string): Promise<CategoryTotal[]> {
     if (!this.db) throw new Error('Database not initialized');

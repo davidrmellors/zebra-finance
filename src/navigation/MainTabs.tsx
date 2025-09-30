@@ -13,12 +13,14 @@ interface MainTabsProps {
   onLogout: () => void;
   onNavigateToTransactionDetail: (id: number) => void;
   onNavigateToSettings: () => void;
+  onNavigateToCategoryManagement: () => void;
 }
 
 export const MainTabs: React.FC<MainTabsProps> = ({
   onLogout,
   onNavigateToTransactionDetail,
-  onNavigateToSettings
+  onNavigateToSettings,
+  onNavigateToCategoryManagement
 }) => {
   return (
     <Tab.Navigator
@@ -87,7 +89,13 @@ export const MainTabs: React.FC<MainTabsProps> = ({
           tabBarIcon: ({ color }) => <TabIcon icon="⚙️" color={color} />,
         }}
       >
-        {() => <SettingsScreen onBack={() => {}} onLogout={onLogout} />}
+        {() => (
+          <SettingsScreen
+            onBack={() => {}}
+            onLogout={onLogout}
+            onNavigateToCategoryManagement={onNavigateToCategoryManagement}
+          />
+        )}
       </Tab.Screen>
     </Tab.Navigator>
   );

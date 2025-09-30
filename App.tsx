@@ -5,12 +5,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { TransactionDetailScreen } from './src/screens/TransactionDetailScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { CategoryManagementScreen } from './src/screens/CategoryManagementScreen';
 import { MainTabs } from './src/navigation/MainTabs';
 import { investecAuth } from './src/services/investecAuth';
 import { database } from './src/services/database';
 import { theme } from './src/theme/colors';
 
-type OverlayScreen = 'none' | 'transactionDetail' | 'settings';
+type OverlayScreen = 'none' | 'transactionDetail' | 'settings' | 'categoryManagement';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -64,6 +65,14 @@ export default function App() {
     setOverlayScreen('none');
   };
 
+  const handleNavigateToCategoryManagement = () => {
+    setOverlayScreen('categoryManagement');
+  };
+
+  const handleBackFromCategoryManagement = () => {
+    setOverlayScreen('none');
+  };
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -88,6 +97,7 @@ export default function App() {
           onLogout={handleLogout}
           onNavigateToTransactionDetail={handleTransactionPress}
           onNavigateToSettings={handleNavigateToSettings}
+          onNavigateToCategoryManagement={handleNavigateToCategoryManagement}
         />
       </NavigationContainer>
 
@@ -102,7 +112,17 @@ export default function App() {
 
       {overlayScreen === 'settings' && (
         <View style={StyleSheet.absoluteFill}>
-          <SettingsScreen onBack={handleBackFromSettings} onLogout={handleLogout} />
+          <SettingsScreen
+            onBack={handleBackFromSettings}
+            onLogout={handleLogout}
+            onNavigateToCategoryManagement={handleNavigateToCategoryManagement}
+          />
+        </View>
+      )}
+
+      {overlayScreen === 'categoryManagement' && (
+        <View style={StyleSheet.absoluteFill}>
+          <CategoryManagementScreen onBack={handleBackFromCategoryManagement} />
         </View>
       )}
 

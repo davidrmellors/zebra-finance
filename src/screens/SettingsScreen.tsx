@@ -19,9 +19,10 @@ const OPENAI_KEY = 'openai_api_key';
 interface SettingsScreenProps {
   onBack: () => void;
   onLogout: () => void;
+  onNavigateToCategoryManagement?: () => void;
 }
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onLogout }) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onLogout, onNavigateToCategoryManagement }) => {
   const [apiKey, setApiKey] = useState('');
   const [hasApiKey, setHasApiKey] = useState(false);
 
@@ -137,6 +138,24 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onLogout
                 </LinearGradient>
               </>
             )}
+          </LinearGradient>
+
+          <LinearGradient colors={theme.gradients.card} style={styles.section}>
+            <Text style={styles.sectionTitle}>Categories</Text>
+            <Text style={styles.sectionDescription}>
+              Manage your transaction categories. Add custom categories or remove ones you don't need.
+            </Text>
+            <LinearGradient
+              colors={[theme.accent.primary, theme.accent.secondary]}
+              style={styles.manageCategoriesButton}
+            >
+              <TouchableOpacity
+                style={styles.buttonInner}
+                onPress={onNavigateToCategoryManagement}
+              >
+                <Text style={styles.manageCategoriesText}>Manage Categories</Text>
+              </TouchableOpacity>
+            </LinearGradient>
           </LinearGradient>
 
           <LinearGradient colors={theme.gradients.card} style={styles.section}>
@@ -292,6 +311,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   logoutButtonText: {
+    color: theme.text.primary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  manageCategoriesButton: {
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  manageCategoriesText: {
     color: theme.text.primary,
     fontSize: 16,
     fontWeight: '600',
