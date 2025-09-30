@@ -8,9 +8,11 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as SecureStore from 'expo-secure-store';
 import { openaiService } from '../services/openaiService';
 import { investecAuth } from '../services/investecAuth';
+import { theme } from '../theme/colors';
 
 const OPENAI_KEY = 'openai_api_key';
 
@@ -83,111 +85,127 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onLogout
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
-      </View>
+    <LinearGradient colors={theme.gradients.primary} style={styles.gradient}>
+      <View style={styles.container}>
+        <LinearGradient colors={theme.gradients.secondary} style={styles.header}>
+          <Text style={styles.title}>Settings</Text>
+        </LinearGradient>
 
-      <ScrollView style={styles.content}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>OpenAI Configuration</Text>
-          <Text style={styles.sectionDescription}>
-            Enter your OpenAI API key to enable the AI assistant. You can get an API key from
-            platform.openai.com.
-          </Text>
+        <ScrollView style={styles.content}>
+          <LinearGradient colors={theme.gradients.card} style={styles.section}>
+            <Text style={styles.sectionTitle}>OpenAI Configuration</Text>
+            <Text style={styles.sectionDescription}>
+              Enter your OpenAI API key to enable the AI assistant. You can get an API key from
+              platform.openai.com.
+            </Text>
 
-          {hasApiKey ? (
-            <View style={styles.apiKeyStatus}>
-              <Text style={styles.apiKeyStatusText}>✓ API Key Configured</Text>
-              <TouchableOpacity style={styles.removeButton} onPress={handleRemoveApiKey}>
-                <Text style={styles.removeButtonText}>Remove Key</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              <TextInput
-                style={styles.input}
-                value={apiKey}
-                onChangeText={setApiKey}
-                placeholder="sk-..."
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
+            {hasApiKey ? (
+              <View style={styles.apiKeyStatus}>
+                <Text style={styles.apiKeyStatusText}>✓ API Key Configured</Text>
+                <LinearGradient
+                  colors={[theme.semantic.error, theme.semantic.errorBright]}
+                  style={styles.removeButton}
+                >
+                  <TouchableOpacity style={styles.buttonInner} onPress={handleRemoveApiKey}>
+                    <Text style={styles.removeButtonText}>Remove Key</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+              </View>
+            ) : (
+              <>
+                <TextInput
+                  style={styles.input}
+                  value={apiKey}
+                  onChangeText={setApiKey}
+                  placeholder="sk-..."
+                  placeholderTextColor={theme.text.tertiary}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <LinearGradient
+                  colors={[theme.accent.primary, theme.accent.secondary]}
+                  style={[styles.saveButton, !apiKey.trim() && styles.saveButtonDisabled]}
+                >
+                  <TouchableOpacity
+                    style={styles.buttonInner}
+                    onPress={handleSaveApiKey}
+                    disabled={!apiKey.trim()}
+                  >
+                    <Text style={styles.saveButtonText}>Save API Key</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+              </>
+            )}
+          </LinearGradient>
+
+          <LinearGradient colors={theme.gradients.card} style={styles.section}>
+            <Text style={styles.sectionTitle}>About</Text>
+            <Text style={styles.aboutText}>
+              Zebra Finance is an AI-powered personal finance assistant that helps you track and
+              understand your spending habits.
+            </Text>
+            <Text style={styles.aboutText}>
+              Built for Investec Q3 2025 Bounty Challenge
+            </Text>
+          </LinearGradient>
+
+          <LinearGradient colors={theme.gradients.card} style={styles.section}>
+            <Text style={styles.sectionTitle}>Account</Text>
+            <LinearGradient
+              colors={[theme.semantic.error, theme.semantic.errorBright]}
+              style={styles.logoutButton}
+            >
               <TouchableOpacity
-                style={[styles.saveButton, !apiKey.trim() && styles.saveButtonDisabled]}
-                onPress={handleSaveApiKey}
-                disabled={!apiKey.trim()}
+                style={styles.buttonInner}
+                onPress={async () => {
+                  Alert.alert(
+                    'Logout',
+                    'Are you sure you want to logout?',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      {
+                        text: 'Logout',
+                        style: 'destructive',
+                        onPress: async () => {
+                          await investecAuth.logout();
+                          onLogout();
+                        },
+                      },
+                    ]
+                  );
+                }}
               >
-                <Text style={styles.saveButtonText}>Save API Key</Text>
+                <Text style={styles.logoutButtonText}>Logout</Text>
               </TouchableOpacity>
-            </>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
-          <Text style={styles.aboutText}>
-            Zebra Finance is an AI-powered personal finance assistant that helps you track and
-            understand your spending habits.
-          </Text>
-          <Text style={styles.aboutText}>
-            Built for Investec Q3 2025 Bounty Challenge
-          </Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={async () => {
-              Alert.alert(
-                'Logout',
-                'Are you sure you want to logout?',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Logout',
-                    style: 'destructive',
-                    onPress: async () => {
-                      await investecAuth.logout();
-                      onLogout();
-                    },
-                  },
-                ]
-              );
-            }}
-          >
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
+            </LinearGradient>
+          </LinearGradient>
+        </ScrollView>
+      </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#6C63FF',
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.border.primary,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.text.primary,
     textAlign: 'center',
     letterSpacing: 0.5,
   },
@@ -196,35 +214,39 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   section: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.border.primary,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: theme.text.primary,
     marginBottom: 8,
   },
   sectionDescription: {
     fontSize: 14,
-    color: '#666',
+    color: theme.text.secondary,
     marginBottom: 16,
     lineHeight: 20,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.border.secondary,
     borderRadius: 8,
-    padding: 12,
+    padding: 14,
     fontSize: 16,
-    backgroundColor: '#fafafa',
+    backgroundColor: theme.background.input,
+    color: theme.text.primary,
     marginBottom: 12,
   },
   saveButton: {
-    backgroundColor: '#6C63FF',
     borderRadius: 8,
+    overflow: 'hidden',
+  },
+  buttonInner: {
     padding: 16,
     alignItems: 'center',
   },
@@ -232,47 +254,45 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   saveButtonText: {
-    color: '#fff',
+    color: theme.text.primary,
     fontSize: 16,
     fontWeight: '600',
   },
   apiKeyStatus: {
-    backgroundColor: '#e8f5e9',
+    backgroundColor: theme.semantic.success,
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: theme.semantic.successBright,
   },
   apiKeyStatusText: {
-    color: '#2e7d32',
+    color: theme.text.primary,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
   },
   removeButton: {
-    backgroundColor: '#f44336',
     borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
+    overflow: 'hidden',
   },
   removeButtonText: {
-    color: '#fff',
+    color: theme.text.primary,
     fontSize: 14,
     fontWeight: '600',
   },
   aboutText: {
     fontSize: 14,
-    color: '#666',
+    color: theme.text.secondary,
     marginBottom: 8,
     lineHeight: 20,
   },
   logoutButton: {
-    backgroundColor: '#ff4444',
     borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
+    overflow: 'hidden',
   },
   logoutButtonText: {
-    color: '#fff',
+    color: theme.text.primary,
     fontSize: 16,
     fontWeight: '600',
   },

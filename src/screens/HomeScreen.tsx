@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { syncService } from '../services/syncService';
 import { database } from '../services/database';
 import { nudgeService, FinancialNudge } from '../services/nudgeService';
+import { theme } from '../theme/colors';
 
 interface HomeScreenProps {
   onLogout: () => void;
@@ -69,99 +71,120 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
   const getNudgeColor = (category: FinancialNudge['category']) => {
     switch (category) {
       case 'warning':
-        return '#FF9800';
+        return theme.semantic.warningBright;
       case 'saving':
-        return '#4CAF50';
+        return theme.semantic.successBright;
       case 'spending':
-        return '#F44336';
+        return theme.semantic.errorBright;
       default:
-        return '#2196F3';
+        return theme.semantic.infoBright;
     }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>🦓 Zebra Finance</Text>
-        <Text style={styles.subtitle}>Welcome to your AI Finance Assistant</Text>
+    <LinearGradient colors={theme.gradients.primary} style={styles.gradient}>
+      <View style={styles.container}>
+        <LinearGradient colors={theme.gradients.secondary} style={styles.header}>
+          <Text style={styles.title}>🦓 Zebra Finance</Text>
+          <Text style={styles.subtitle}>Private Banking Intelligence</Text>
+        </LinearGradient>
+
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+          alwaysBounceVertical={true}
+        >
+          <View style={styles.content}>
+            <LinearGradient
+              colors={[theme.accent.primary, theme.accent.secondary]}
+              style={styles.statCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.statLabel}>Total Transactions</Text>
+              <Text style={styles.statValue}>{transactionCount}</Text>
+            </LinearGradient>
+
+            <LinearGradient
+              colors={theme.gradients.accent}
+              style={[styles.syncButton, syncing && styles.buttonDisabled]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <TouchableOpacity
+                style={styles.syncButtonInner}
+                onPress={handleSync}
+                disabled={syncing}
+              >
+                {syncing ? (
+                  <ActivityIndicator color={theme.text.primary} />
+                ) : (
+                  <Text style={styles.buttonText}>🔄 Sync Transactions</Text>
+                )}
+              </TouchableOpacity>
+            </LinearGradient>
+
+            {/* Financial Nudges */}
+            <View style={styles.nudgesSection}>
+              <Text style={styles.sectionTitle}>💡 Financial Insights</Text>
+              {loadingNudges ? (
+                <ActivityIndicator style={styles.nudgeLoader} color={theme.accent.primary} />
+              ) : (
+                nudges.slice(0, 3).map((nudge) => (
+                  <LinearGradient
+                    key={nudge.id}
+                    colors={theme.gradients.card}
+                    style={[
+                      styles.nudgeCard,
+                      { borderLeftColor: getNudgeColor(nudge.category) },
+                    ]}
+                  >
+                    <Text style={styles.nudgeIcon}>{nudge.icon}</Text>
+                    <View style={styles.nudgeContent}>
+                      <Text style={styles.nudgeTitle}>{nudge.title}</Text>
+                      <Text style={styles.nudgeMessage}>{nudge.message}</Text>
+                    </View>
+                  </LinearGradient>
+                ))
+              )}
+            </View>
+          </View>
+        </ScrollView>
       </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        bounces={true}
-        alwaysBounceVertical={true}
-      >
-        <View style={styles.content}>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Total Transactions</Text>
-            <Text style={styles.statValue}>{transactionCount}</Text>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.syncButton, syncing && styles.buttonDisabled]}
-            onPress={handleSync}
-            disabled={syncing}
-          >
-            {syncing ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>🔄 Sync Transactions</Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Financial Nudges */}
-          <View style={styles.nudgesSection}>
-            <Text style={styles.sectionTitle}>💡 Financial Insights</Text>
-            {loadingNudges ? (
-              <ActivityIndicator style={styles.nudgeLoader} color="#6C63FF" />
-            ) : (
-              nudges.slice(0, 3).map((nudge) => (
-                <View
-                  key={nudge.id}
-                  style={[
-                    styles.nudgeCard,
-                    { borderLeftColor: getNudgeColor(nudge.category) },
-                  ]}
-                >
-                  <Text style={styles.nudgeIcon}>{nudge.icon}</Text>
-                  <View style={styles.nudgeContent}>
-                    <Text style={styles.nudgeTitle}>{nudge.title}</Text>
-                    <Text style={styles.nudgeMessage}>{nudge.message}</Text>
-                  </View>
-                </View>
-              ))
-            )}
-          </View>
-        </View>
-      </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#f5f5f5',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.border.primary,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.text.primary,
     textAlign: 'center',
     marginBottom: 8,
+    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 14,
+    color: theme.text.secondary,
     textAlign: 'center',
     marginBottom: 20,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   scrollView: {
     flex: 1,
@@ -170,69 +193,66 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   content: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 24,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    padding: 20,
   },
   statCard: {
-    backgroundColor: '#6C63FF',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 16,
+    padding: 24,
     alignItems: 'center',
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: theme.border.accent,
   },
   statLabel: {
-    color: '#fff',
-    fontSize: 14,
-    opacity: 0.9,
-    marginBottom: 8,
+    color: theme.text.primary,
+    fontSize: 13,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 12,
   },
   statValue: {
-    color: '#fff',
-    fontSize: 36,
+    color: theme.text.primary,
+    fontSize: 48,
     fontWeight: 'bold',
   },
   syncButton: {
-    backgroundColor: '#4CAF50',
     borderRadius: 8,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  syncButtonInner: {
     padding: 16,
     alignItems: 'center',
-    marginBottom: 24,
   },
   buttonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   buttonText: {
-    color: '#fff',
+    color: theme.text.primary,
     fontSize: 16,
     fontWeight: '600',
   },
   nudgesSection: {
-    marginTop: 16,
+    marginTop: 8,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+    color: theme.text.primary,
+    marginBottom: 16,
+    letterSpacing: 0.5,
   },
   nudgeLoader: {
     marginVertical: 20,
   },
   nudgeCard: {
     flexDirection: 'row',
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 12,
-    borderLeftWidth: 4,
+    borderLeftWidth: 3,
+    borderWidth: 1,
+    borderColor: theme.border.primary,
   },
   nudgeIcon: {
     fontSize: 24,
@@ -244,12 +264,12 @@ const styles = StyleSheet.create({
   nudgeTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: theme.text.primary,
     marginBottom: 4,
   },
   nudgeMessage: {
     fontSize: 13,
-    color: '#666',
-    lineHeight: 18,
+    color: theme.text.secondary,
+    lineHeight: 20,
   },
 });

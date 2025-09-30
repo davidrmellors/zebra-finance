@@ -8,6 +8,7 @@ import { SettingsScreen } from './src/screens/SettingsScreen';
 import { MainTabs } from './src/navigation/MainTabs';
 import { investecAuth } from './src/services/investecAuth';
 import { database } from './src/services/database';
+import { theme } from './src/theme/colors';
 
 type OverlayScreen = 'none' | 'transactionDetail' | 'settings';
 
@@ -65,7 +66,7 @@ export default function App() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6C63FF" />
+        <ActivityIndicator size="large" color={theme.accent.primary} />
       </View>
     );
   }
@@ -74,7 +75,7 @@ export default function App() {
     return (
       <>
         <LoginScreen onLoginSuccess={handleLoginSuccess} />
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
       </>
     );
   }
@@ -87,7 +88,7 @@ export default function App() {
           transactionId={selectedTransactionId}
           onBack={handleBackFromDetail}
         />
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
       </>
     );
   }
@@ -96,7 +97,7 @@ export default function App() {
     return (
       <>
         <SettingsScreen onBack={handleBackFromSettings} onLogout={handleLogout} />
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
       </>
     );
   }
@@ -110,7 +111,7 @@ export default function App() {
           onNavigateToSettings={handleNavigateToSettings}
         />
       </NavigationContainer>
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </>
   );
 }
@@ -120,6 +121,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.background.primary,
   },
 });

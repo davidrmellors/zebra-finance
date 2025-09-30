@@ -11,7 +11,9 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { investecAuth } from '../services/investecAuth';
+import { theme } from '../theme/colors';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
@@ -51,73 +53,93 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+    <LinearGradient
+      colors={theme.gradients.primary}
+      style={styles.gradient}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.title}>🦓 Zebra Finance</Text>
-          <Text style={styles.subtitle}>AI-Powered Personal Finance Assistant</Text>
-        </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.header}>
+            <Text style={styles.title}>🦓 Zebra Finance</Text>
+            <Text style={styles.subtitle}>Private Banking Intelligence</Text>
+          </View>
 
-        <View style={styles.form}>
-          <Text style={styles.label}>Client ID</Text>
-          <TextInput
-            style={styles.input}
-            value={clientId}
-            onChangeText={setClientId}
-            placeholder="Enter your Investec Client ID"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <Text style={styles.label}>Client Secret</Text>
-          <TextInput
-            style={styles.input}
-            value={clientSecret}
-            onChangeText={setClientSecret}
-            placeholder="Enter your Investec Client Secret"
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <Text style={styles.label}>API Key</Text>
-          <TextInput
-            style={styles.input}
-            value={apiKey}
-            onChangeText={setApiKey}
-            placeholder="Enter your Investec API Key"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
+          <LinearGradient
+            colors={theme.gradients.card}
+            style={styles.form}
           >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Login</Text>
-            )}
-          </TouchableOpacity>
+            <Text style={styles.label}>Client ID</Text>
+            <TextInput
+              style={styles.input}
+              value={clientId}
+              onChangeText={setClientId}
+              placeholder="Enter your Investec Client ID"
+              placeholderTextColor={theme.text.tertiary}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
 
-          <Text style={styles.helpText}>
-            Get your credentials from the Investec Developer Portal
-          </Text>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <Text style={styles.label}>Client Secret</Text>
+            <TextInput
+              style={styles.input}
+              value={clientSecret}
+              onChangeText={setClientSecret}
+              placeholder="Enter your Investec Client Secret"
+              placeholderTextColor={theme.text.tertiary}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+
+            <Text style={styles.label}>API Key</Text>
+            <TextInput
+              style={styles.input}
+              value={apiKey}
+              onChangeText={setApiKey}
+              placeholder="Enter your Investec API Key"
+              placeholderTextColor={theme.text.tertiary}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+
+            <LinearGradient
+              colors={[theme.accent.primary, theme.accent.secondary]}
+              style={[styles.button, loading && styles.buttonDisabled]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <TouchableOpacity
+                style={styles.buttonInner}
+                onPress={handleLogin}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={theme.text.primary} />
+                ) : (
+                  <Text style={styles.buttonText}>Login</Text>
+                )}
+              </TouchableOpacity>
+            </LinearGradient>
+
+            <Text style={styles.helpText}>
+              Get your credentials from the Investec Developer Portal
+            </Text>
+          </LinearGradient>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   scrollContent: {
     flexGrow: 1,
@@ -129,60 +151,64 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.text.primary,
     marginBottom: 8,
+    letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: theme.text.secondary,
     textAlign: 'center',
+    letterSpacing: 1,
   },
   form: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: theme.border.primary,
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#333',
+    color: theme.text.secondary,
     marginBottom: 8,
     marginTop: 12,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.border.secondary,
     borderRadius: 8,
-    padding: 12,
+    padding: 14,
     fontSize: 16,
-    backgroundColor: '#fafafa',
+    backgroundColor: theme.background.input,
+    color: theme.text.primary,
   },
   button: {
-    backgroundColor: '#6C63FF',
     borderRadius: 8,
+    marginTop: 24,
+    overflow: 'hidden',
+  },
+  buttonInner: {
     padding: 16,
     alignItems: 'center',
-    marginTop: 24,
   },
   buttonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   buttonText: {
-    color: '#fff',
+    color: theme.text.primary,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 1,
   },
   helpText: {
     textAlign: 'center',
-    color: '#999',
+    color: theme.text.tertiary,
     fontSize: 12,
-    marginTop: 16,
+    marginTop: 20,
   },
 });

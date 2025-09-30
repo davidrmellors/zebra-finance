@@ -181,7 +181,7 @@ This project is built for the Investec Q3 2025 Bounty Challenge.
 
 ## 👨‍💻 Author
 
-Built with ❤️ for the Investec Developer Community
+David Mellors
 
 ## 🙏 Acknowledgments
 

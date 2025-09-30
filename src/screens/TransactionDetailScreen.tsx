@@ -9,8 +9,10 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { database } from '../services/database';
 import { TransactionWithCategory, Category } from '../types/database';
+import { theme } from '../theme/colors';
 
 interface TransactionDetailScreenProps {
   transactionId: number;
@@ -75,102 +77,114 @@ export const TransactionDetailScreen: React.FC<TransactionDetailScreenProps> = (
 
   if (loading || !transaction) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6C63FF" />
-      </View>
+      <LinearGradient colors={theme.gradients.primary} style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.accent.primary} />
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Transaction Detail</Text>
-      </View>
-
-      <ScrollView style={styles.content}>
-        <View style={styles.amountCard}>
-          <Text style={styles.amountLabel}>Amount</Text>
-          <Text style={[styles.amount, transaction.amount < 0 && styles.negativeAmount]}>
-            {formatAmount(transaction.amount)}
-          </Text>
-        </View>
-
-        <View style={styles.detailsCard}>
-          <DetailRow label="Description" value={transaction.description} />
-          <DetailRow label="Date" value={formatDate(transaction.transactionDate)} />
-          <DetailRow label="Type" value={transaction.type} />
-          <DetailRow label="Transaction Type" value={transaction.transactionType} />
-          <DetailRow label="Status" value={transaction.status} />
-          {transaction.cardNumber && (
-            <DetailRow label="Card Number" value={transaction.cardNumber} />
-          )}
-          <DetailRow label="Account ID" value={transaction.accountId} />
-        </View>
-
-        <View style={styles.categoryCard}>
-          <Text style={styles.sectionTitle}>Category</Text>
-          {transaction.categoryName ? (
-            <View
-              style={[
-                styles.selectedCategory,
-                { backgroundColor: transaction.categoryColor || '#999' },
-              ]}
-            >
-              <Text style={styles.selectedCategoryText}>{transaction.categoryName}</Text>
-            </View>
-          ) : (
-            <Text style={styles.noCategoryText}>No category assigned</Text>
-          )}
-          <TouchableOpacity
-            style={styles.changeCategoryButton}
-            onPress={() => setShowCategoryModal(true)}
-          >
-            <Text style={styles.changeCategoryText}>
-              {transaction.categoryName ? 'Change Category' : 'Assign Category'}
-            </Text>
+    <LinearGradient colors={theme.gradients.primary} style={styles.gradient}>
+      <View style={styles.container}>
+        <LinearGradient colors={theme.gradients.secondary} style={styles.header}>
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
-        </View>
-      </ScrollView>
+          <Text style={styles.title}>Transaction Detail</Text>
+        </LinearGradient>
 
-      <Modal
-        visible={showCategoryModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowCategoryModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Category</Text>
-              <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
-                <Text style={styles.modalClose}>✕</Text>
+        <ScrollView style={styles.content}>
+          <LinearGradient
+            colors={[theme.accent.primary, theme.accent.secondary]}
+            style={styles.amountCard}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.amountLabel}>Amount</Text>
+            <Text style={[styles.amount, transaction.amount < 0 && styles.negativeAmount]}>
+              {formatAmount(transaction.amount)}
+            </Text>
+          </LinearGradient>
+
+          <LinearGradient colors={theme.gradients.card} style={styles.detailsCard}>
+            <DetailRow label="Description" value={transaction.description} />
+            <DetailRow label="Date" value={formatDate(transaction.transactionDate)} />
+            <DetailRow label="Type" value={transaction.type} />
+            <DetailRow label="Transaction Type" value={transaction.transactionType} />
+            <DetailRow label="Status" value={transaction.status} />
+            {transaction.cardNumber && (
+              <DetailRow label="Card Number" value={transaction.cardNumber} />
+            )}
+            <DetailRow label="Account ID" value={transaction.accountId} />
+          </LinearGradient>
+
+          <LinearGradient colors={theme.gradients.card} style={styles.categoryCard}>
+            <Text style={styles.sectionTitle}>Category</Text>
+            {transaction.categoryName ? (
+              <View
+                style={[
+                  styles.selectedCategory,
+                  { backgroundColor: transaction.categoryColor || theme.border.secondary },
+                ]}
+              >
+                <Text style={styles.selectedCategoryText}>{transaction.categoryName}</Text>
+              </View>
+            ) : (
+              <Text style={styles.noCategoryText}>No category assigned</Text>
+            )}
+            <LinearGradient
+              colors={theme.gradients.accent}
+              style={styles.changeCategoryButton}
+            >
+              <TouchableOpacity
+                style={styles.buttonInner}
+                onPress={() => setShowCategoryModal(true)}
+              >
+                <Text style={styles.changeCategoryText}>
+                  {transaction.categoryName ? 'Change Category' : 'Assign Category'}
+                </Text>
               </TouchableOpacity>
-            </View>
-            <FlatList
-              data={categories}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.categoryOption}
-                  onPress={() => handleCategorySelect(item.id)}
-                >
-                  <View style={[styles.categoryColor, { backgroundColor: item.color }]} />
-                  <Text style={styles.categoryName}>
-                    {item.icon} {item.name}
-                  </Text>
-                  {transaction.categoryId === item.id && (
-                    <Text style={styles.selectedIndicator}>✓</Text>
-                  )}
+            </LinearGradient>
+          </LinearGradient>
+        </ScrollView>
+
+        <Modal
+          visible={showCategoryModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowCategoryModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <LinearGradient colors={theme.gradients.card} style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Select Category</Text>
+                <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
+                  <Text style={styles.modalClose}>✕</Text>
                 </TouchableOpacity>
-              )}
-            />
+              </View>
+              <FlatList
+                data={categories}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.categoryOption}
+                    onPress={() => handleCategorySelect(item.id)}
+                  >
+                    <View style={[styles.categoryColor, { backgroundColor: item.color }]} />
+                    <Text style={styles.categoryName}>
+                      {item.icon} {item.name}
+                    </Text>
+                    {transaction.categoryId === item.id && (
+                      <Text style={styles.selectedIndicator}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                )}
+              />
+            </LinearGradient>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -182,9 +196,11 @@ const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value })
 );
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   loadingContainer: {
     flex: 1,
@@ -192,84 +208,89 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    backgroundColor: '#6C63FF',
     padding: 20,
     paddingTop: 50,
     flexDirection: 'row',
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.border.primary,
   },
   backButton: {
     marginRight: 16,
   },
   backButtonText: {
-    color: '#fff',
+    color: theme.text.primary,
     fontSize: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text.primary,
   },
   content: {
     flex: 1,
     padding: 16,
   },
   amountCard: {
-    backgroundColor: '#6C63FF',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 24,
     alignItems: 'center',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.border.accent,
   },
   amountLabel: {
-    color: '#fff',
-    fontSize: 14,
-    opacity: 0.9,
-    marginBottom: 8,
+    color: theme.text.primary,
+    fontSize: 13,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 12,
   },
   amount: {
-    color: '#fff',
-    fontSize: 42,
+    color: theme.text.primary,
+    fontSize: 48,
     fontWeight: 'bold',
   },
   negativeAmount: {
-    color: '#ffcdd2',
+    color: theme.transaction.negative,
   },
   detailsCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.border.primary,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: theme.border.primary,
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666',
+    color: theme.text.tertiary,
     flex: 1,
   },
   detailValue: {
     fontSize: 14,
-    color: '#333',
+    color: theme.text.primary,
     fontWeight: '600',
     flex: 2,
     textAlign: 'right',
   },
   categoryCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.border.primary,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: theme.text.primary,
     marginBottom: 12,
   },
   selectedCategory: {
@@ -279,35 +300,36 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   selectedCategoryText: {
-    color: '#fff',
+    color: theme.text.primary,
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
   },
   noCategoryText: {
     fontSize: 14,
-    color: '#999',
+    color: theme.text.tertiary,
     textAlign: 'center',
     marginBottom: 12,
   },
   changeCategoryButton: {
-    backgroundColor: '#6C63FF',
     borderRadius: 8,
+    overflow: 'hidden',
+  },
+  buttonInner: {
     padding: 12,
     alignItems: 'center',
   },
   changeCategoryText: {
-    color: '#fff',
+    color: theme.text.primary,
     fontSize: 14,
     fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: theme.overlay,
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '70%',
@@ -322,18 +344,18 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.text.primary,
   },
   modalClose: {
     fontSize: 24,
-    color: '#666',
+    color: theme.text.secondary,
   },
   categoryOption: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: theme.border.primary,
   },
   categoryColor: {
     width: 24,
@@ -343,12 +365,12 @@ const styles = StyleSheet.create({
   },
   categoryName: {
     fontSize: 16,
-    color: '#333',
+    color: theme.text.primary,
     flex: 1,
   },
   selectedIndicator: {
     fontSize: 18,
-    color: '#4CAF50',
+    color: theme.accent.primary,
     fontWeight: 'bold',
   },
 });

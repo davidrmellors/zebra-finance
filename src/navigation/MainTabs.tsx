@@ -5,6 +5,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { TransactionsScreen } from '../screens/TransactionsScreen';
 import { ChatScreen } from '../screens/ChatScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { theme } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
 
@@ -23,12 +24,12 @@ export const MainTabs: React.FC<MainTabsProps> = ({
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#6C63FF',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: theme.accent.primary,
+        tabBarInactiveTintColor: theme.text.tertiary,
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: theme.background.card,
           borderTopWidth: 1,
-          borderTopColor: '#e0e0e0',
+          borderTopColor: theme.border.primary,
           paddingBottom: 5,
           paddingTop: 5,
           height: 60,

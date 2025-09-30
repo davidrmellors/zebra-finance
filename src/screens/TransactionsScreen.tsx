@@ -9,8 +9,10 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { database } from '../services/database';
 import { TransactionWithCategory } from '../types/database';
+import { theme } from '../theme/colors';
 
 interface TransactionsScreenProps {
   onTransactionPress: (transactionId: number) => void;
@@ -76,77 +78,87 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
   };
 
   const renderTransaction = ({ item }: { item: TransactionWithCategory }) => (
-    <TouchableOpacity
-      style={styles.transactionCard}
-      onPress={() => onTransactionPress(item.id)}
-    >
-      <View style={styles.transactionLeft}>
-        <Text style={styles.transactionDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-        <Text style={styles.transactionDate}>{formatDate(item.transactionDate)}</Text>
-        {item.categoryName && (
-          <View
-            style={[styles.categoryBadge, { backgroundColor: item.categoryColor || '#999' }]}
-          >
-            <Text style={styles.categoryText}>{item.categoryName}</Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.transactionRight}>
-        <Text style={[styles.transactionAmount, item.amount < 0 && styles.negativeAmount]}>
-          {formatAmount(item.amount)}
-        </Text>
-      </View>
+    <TouchableOpacity onPress={() => onTransactionPress(item.id)}>
+      <LinearGradient colors={theme.gradients.card} style={styles.transactionCard}>
+        <View style={styles.transactionLeft}>
+          <Text style={styles.transactionDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
+          <Text style={styles.transactionDate}>{formatDate(item.transactionDate)}</Text>
+          {item.categoryName && (
+            <View
+              style={[styles.categoryBadge, { backgroundColor: item.categoryColor || theme.border.secondary }]}
+            >
+              <Text style={styles.categoryText}>{item.categoryName}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.transactionRight}>
+          <Text style={[styles.transactionAmount, item.amount < 0 && styles.negativeAmount]}>
+            {formatAmount(item.amount)}
+          </Text>
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6C63FF" />
-      </View>
+      <LinearGradient colors={theme.gradients.primary} style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.accent.primary} />
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Transactions</Text>
-      </View>
+    <LinearGradient colors={theme.gradients.primary} style={styles.gradient}>
+      <View style={styles.container}>
+        <LinearGradient colors={theme.gradients.secondary} style={styles.header}>
+          <Text style={styles.title}>Transactions</Text>
+        </LinearGradient>
 
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search transactions..."
-          value={searchQuery}
-          onChangeText={handleSearch}
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search transactions..."
+            placeholderTextColor={theme.text.tertiary}
+            value={searchQuery}
+            onChangeText={handleSearch}
+          />
+        </View>
+
+        <FlatList
+          data={transactions}
+          renderItem={renderTransaction}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.accent.primary}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No transactions found</Text>
+              <Text style={styles.emptySubtext}>
+                Pull down to refresh or sync your account
+              </Text>
+            </View>
+          }
         />
       </View>
-
-      <FlatList
-        data={transactions}
-        renderItem={renderTransaction}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No transactions found</Text>
-            <Text style={styles.emptySubtext}>
-              Pull down to refresh or sync your account
-            </Text>
-          </View>
-        }
-      />
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   loadingContainer: {
     flex: 1,
@@ -154,53 +166,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    backgroundColor: '#6C63FF',
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.border.primary,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.text.primary,
     textAlign: 'center',
     letterSpacing: 0.5,
   },
   searchContainer: {
     padding: 16,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: theme.border.primary,
   },
   searchInput: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.background.input,
     borderRadius: 8,
-    padding: 12,
+    padding: 14,
     fontSize: 16,
+    color: theme.text.primary,
+    borderWidth: 1,
+    borderColor: theme.border.secondary,
   },
   listContent: {
     padding: 16,
   },
   transactionCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: theme.border.primary,
   },
   transactionLeft: {
     flex: 1,
@@ -209,12 +215,12 @@ const styles = StyleSheet.create({
   transactionDescription: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: theme.text.primary,
     marginBottom: 4,
   },
   transactionDate: {
     fontSize: 12,
-    color: '#999',
+    color: theme.text.tertiary,
     marginBottom: 4,
   },
   categoryBadge: {
@@ -225,7 +231,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   categoryText: {
-    color: '#fff',
+    color: theme.text.primary,
     fontSize: 11,
     fontWeight: '600',
   },
@@ -235,10 +241,10 @@ const styles = StyleSheet.create({
   transactionAmount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: theme.transaction.positive,
   },
   negativeAmount: {
-    color: '#F44336',
+    color: theme.transaction.negative,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -248,11 +254,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#666',
+    color: theme.text.secondary,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999',
+    color: theme.text.tertiary,
   },
 });
