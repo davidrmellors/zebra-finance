@@ -63,7 +63,7 @@ const getLastSalaryDate = (payDay: number): Date => {
 };
 
 interface CategoriesScreenProps {
-  onNavigateToFilteredTransactions?: (categoryId: number, categoryName: string) => void;
+  onNavigateToFilteredTransactions?: (categoryId: number) => void;
 }
 
 export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ onNavigateToFilteredTransactions }) => {
@@ -213,9 +213,10 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ onNavigateTo
     })}`;
   };
 
-  const handleCategoryPress = (categoryId: number, categoryName: string) => {
+  const handleCategoryPress = (categoryId: number) => {
+    console.log('Category pressed:', categoryId);
     if (onNavigateToFilteredTransactions) {
-      onNavigateToFilteredTransactions(categoryId, categoryName);
+      onNavigateToFilteredTransactions(categoryId);
     }
   };
 
@@ -223,7 +224,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ onNavigateTo
     const isNegative = item.total < 0;
 
     return (
-      <TouchableOpacity onPress={() => handleCategoryPress(item.categoryId, item.categoryName)}>
+      <TouchableOpacity onPress={() => handleCategoryPress(item.categoryId)}>
         <LinearGradient colors={theme.gradients.card} style={styles.categoryItem}>
           <View style={styles.categoryHeader}>
             <View style={styles.categoryInfo}>

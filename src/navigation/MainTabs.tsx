@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useNavigationState } from '@react-navigation/native';
 import { HomeScreen } from '../screens/HomeScreen';
 import { TransactionsScreen } from '../screens/TransactionsScreen';
 import { ChatScreen } from '../screens/ChatScreen';
@@ -17,9 +16,7 @@ interface MainTabsProps {
   onNavigateToSettings: () => void;
   onNavigateToCategoryManagement: () => void;
   refreshKey: number;
-  categoryFilter?: { categoryId: number; categoryName: string } | null;
-  onNavigateToFilteredTransactions?: (categoryId: number, categoryName: string) => void;
-  onClearCategoryFilter?: () => void;
+  navigationRef: any;
 }
 
 export const MainTabs: React.FC<MainTabsProps> = ({
@@ -28,19 +25,9 @@ export const MainTabs: React.FC<MainTabsProps> = ({
   onNavigateToSettings,
   onNavigateToCategoryManagement,
   refreshKey,
-  categoryFilter,
-  onNavigateToFilteredTransactions,
-  onClearCategoryFilter,
+  navigationRef,
 }) => {
-  // Clear category filter after it's been applied
-  useEffect(() => {
-    if (categoryFilter && onClearCategoryFilter) {
-      const timer = setTimeout(() => {
-        onClearCategoryFilter();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [categoryFilter, onClearCategoryFilter]);
+  const transactionFilterRef = useRef<((categoryId: number) => void) | null>(null);
   return (
     <Tab.Navigator
       screenOptions={{
@@ -86,7 +73,9 @@ export const MainTabs: React.FC<MainTabsProps> = ({
             key={refreshKey}
             onTransactionPress={onNavigateToTransactionDetail}
             onBack={() => {}}
-            initialCategoryFilter={categoryFilter || undefined}
+            setCategoryFilterRef={(setFilter) => {
+              transactionFilterRef.current = setFilter;
+            }}
           />
         )}
       </Tab.Screen>
@@ -115,7 +104,16 @@ export const MainTabs: React.FC<MainTabsProps> = ({
       >
         {() => (
           <CategoriesScreen
-            onNavigateToFilteredTransactions={onNavigateToFilteredTransactions}
+            onNavigateToFilteredTransactions={(categoryId) => {
+              // Navigate to Transactions tab
+              navigationRef.current?.navigate('Transactions');
+              // Apply the filter
+              setTimeout(() => {
+                if (transactionFilterRef.current) {
+                  transactionFilterRef.current(categoryId);
+                }
+              }, 100);
+            }}
           />
         )}
       </Tab.Screen>
