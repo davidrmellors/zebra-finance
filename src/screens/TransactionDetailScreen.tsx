@@ -1,0 +1,354 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Modal,
+  FlatList,
+} from 'react-native';
+import { database } from '../services/database';
+import { TransactionWithCategory, Category } from '../types/database';
+
+interface TransactionDetailScreenProps {
+  transactionId: number;
+  onBack: () => void;
+}
+
+export const TransactionDetailScreen: React.FC<TransactionDetailScreenProps> = ({
+  transactionId,
+  onBack,
+}) => {
+  const [transaction, setTransaction] = useState<TransactionWithCategory | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, [transactionId]);
+
+  const loadData = async () => {
+    try {
+      const [txn, cats] = await Promise.all([
+        database.getTransactionById(transactionId),
+        database.getCategories(),
+      ]);
+      setTransaction(txn);
+      setCategories(cats);
+    } catch (error) {
+      console.error('Error loading transaction:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCategorySelect = async (categoryId: number) => {
+    if (!transaction) return;
+
+    try {
+      await database.updateTransactionCategory(transaction.id, categoryId);
+      const updatedTxn = await database.getTransactionById(transaction.id);
+      setTransaction(updatedTxn);
+      setShowCategoryModal(false);
+    } catch (error) {
+      console.error('Error updating category:', error);
+    }
+  };
+
+  const formatAmount = (amount: number) => {
+    const formatted = Math.abs(amount).toFixed(2);
+    return amount < 0 ? `-R${formatted}` : `R${formatted}`;
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-ZA', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  if (loading || !transaction) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6C63FF" />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <Text style={styles.backButtonText}>← Back</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>Transaction Detail</Text>
+      </View>
+
+      <ScrollView style={styles.content}>
+        <View style={styles.amountCard}>
+          <Text style={styles.amountLabel}>Amount</Text>
+          <Text style={[styles.amount, transaction.amount < 0 && styles.negativeAmount]}>
+            {formatAmount(transaction.amount)}
+          </Text>
+        </View>
+
+        <View style={styles.detailsCard}>
+          <DetailRow label="Description" value={transaction.description} />
+          <DetailRow label="Date" value={formatDate(transaction.transactionDate)} />
+          <DetailRow label="Type" value={transaction.type} />
+          <DetailRow label="Transaction Type" value={transaction.transactionType} />
+          <DetailRow label="Status" value={transaction.status} />
+          {transaction.cardNumber && (
+            <DetailRow label="Card Number" value={transaction.cardNumber} />
+          )}
+          <DetailRow label="Account ID" value={transaction.accountId} />
+        </View>
+
+        <View style={styles.categoryCard}>
+          <Text style={styles.sectionTitle}>Category</Text>
+          {transaction.categoryName ? (
+            <View
+              style={[
+                styles.selectedCategory,
+                { backgroundColor: transaction.categoryColor || '#999' },
+              ]}
+            >
+              <Text style={styles.selectedCategoryText}>{transaction.categoryName}</Text>
+            </View>
+          ) : (
+            <Text style={styles.noCategoryText}>No category assigned</Text>
+          )}
+          <TouchableOpacity
+            style={styles.changeCategoryButton}
+            onPress={() => setShowCategoryModal(true)}
+          >
+            <Text style={styles.changeCategoryText}>
+              {transaction.categoryName ? 'Change Category' : 'Assign Category'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      <Modal
+        visible={showCategoryModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowCategoryModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Category</Text>
+              <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
+                <Text style={styles.modalClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={categories}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.categoryOption}
+                  onPress={() => handleCategorySelect(item.id)}
+                >
+                  <View style={[styles.categoryColor, { backgroundColor: item.color }]} />
+                  <Text style={styles.categoryName}>
+                    {item.icon} {item.name}
+                  </Text>
+                  {transaction.categoryId === item.id && (
+                    <Text style={styles.selectedIndicator}>✓</Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
+const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <View style={styles.detailRow}>
+    <Text style={styles.detailLabel}>{label}</Text>
+    <Text style={styles.detailValue}>{value}</Text>
+  </View>
+);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    backgroundColor: '#6C63FF',
+    padding: 20,
+    paddingTop: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 16,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  amountCard: {
+    backgroundColor: '#6C63FF',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  amountLabel: {
+    color: '#fff',
+    fontSize: 14,
+    opacity: 0.9,
+    marginBottom: 8,
+  },
+  amount: {
+    color: '#fff',
+    fontSize: 42,
+    fontWeight: 'bold',
+  },
+  negativeAmount: {
+    color: '#ffcdd2',
+  },
+  detailsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: '#666',
+    flex: 1,
+  },
+  detailValue: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '600',
+    flex: 2,
+    textAlign: 'right',
+  },
+  categoryCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+  },
+  selectedCategory: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  selectedCategoryText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  noCategoryText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  changeCategoryButton: {
+    backgroundColor: '#6C63FF',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+  },
+  changeCategoryText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
+    padding: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  modalClose: {
+    fontSize: 24,
+    color: '#666',
+  },
+  categoryOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  categoryColor: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginRight: 12,
+  },
+  categoryName: {
+    fontSize: 16,
+    color: '#333',
+    flex: 1,
+  },
+  selectedIndicator: {
+    fontSize: 18,
+    color: '#4CAF50',
+    fontWeight: 'bold',
+  },
+});
