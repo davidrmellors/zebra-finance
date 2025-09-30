@@ -77,6 +77,8 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ onNavigateTo
   const [selectedIcon, setSelectedIcon] = useState(PRESET_ICONS[0]);
   const [filterByPayPeriod, setFilterByPayPeriod] = useState(true);
   const [payDay, setPayDay] = useState(27);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalSpending, setTotalSpending] = useState(0);
 
   // Load pay day from storage
   useEffect(() => {
@@ -107,6 +109,11 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ onNavigateTo
 
       const totals = await database.getCategoryTotals(startDate, endDate);
       setCategoryTotals(totals);
+
+      // Load total income and spending
+      const incomeSpending = await database.getTotalIncomeAndSpending(startDate, endDate);
+      setTotalIncome(incomeSpending.totalIncome);
+      setTotalSpending(incomeSpending.totalSpending);
     } catch (error) {
       console.error('Error loading category totals:', error);
     } finally {
@@ -381,8 +388,6 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ onNavigateTo
     );
   }
 
-  const totalSpending = categoryTotals.reduce((sum, cat) => sum + (cat.total < 0 ? Math.abs(cat.total) : 0), 0);
-  const totalIncome = categoryTotals.reduce((sum, cat) => sum + (cat.total > 0 ? cat.total : 0), 0);
 
   const formatDateRange = () => {
     if (!filterByPayPeriod) return 'All time';

@@ -375,6 +375,35 @@ class DatabaseService {
     return result?.count || 0;
   }
 
+  async getTotalIncomeAndSpending(startDate?: string, endDate?: string): Promise<{ totalIncome: number; totalSpending: number }> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    let query = `
+      SELECT
+        SUM(CASE WHEN LOWER(type) = 'credit' THEN amount ELSE 0 END) as total_income,
+        SUM(CASE WHEN LOWER(type) = 'debit' THEN ABS(amount) ELSE 0 END) as total_spending
+      FROM transactions
+    `;
+
+    const params: any[] = [];
+
+    if (startDate && endDate) {
+      query += ' WHERE transaction_date BETWEEN ? AND ?';
+      params.push(startDate, endDate);
+    }
+
+    console.log('getTotalIncomeAndSpending query:', query);
+    console.log('getTotalIncomeAndSpending params:', params);
+
+    const result = await this.db.getFirstAsync<any>(query, params);
+    console.log('getTotalIncomeAndSpending result:', result);
+
+    return {
+      totalIncome: result?.total_income || 0,
+      totalSpending: result?.total_spending || 0,
+    };
+  }
+
   async clearAllTransactions(): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
     await this.db.runAsync('DELETE FROM transactions');
